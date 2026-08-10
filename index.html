@@ -803,13 +803,55 @@ ${journal7}
 - Date du jour : ${new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}.`;
 }
 
-/* ---------- Appel Gemini (fournisseur par défaut, niveau gratuit) ---------- */
+/* ---------- Appel Gemini (fournisseur par défaut, niveau gratuit) ----------
+   Google renomme et retire régulièrement ses modèles (ex. gemini-2.5-flash,
+   fermé aux nouvelles clés en 2026 → erreur 404). L'app ne fige donc JAMAIS
+   un nom de modèle : elle essaie une liste de candidats, mémorise celui qui
+   répond, et en dernier recours interroge ListModels pour découvrir
+   elle-même un modèle Flash disponible. */
+const MODELES_GEMINI=["gemini-flash-latest","gemini-3.6-flash","gemini-3.5-flash","gemini-2.5-flash"];
+function modeleGeminiActuel(){ return (S.reglages&&S.reglages.modeleGemini)||MODELES_GEMINI[0]; }
 async function appelGemini(systeme,utilisateur,opts){
+  opts=opts||{};
+  const candidats=[modeleGeminiActuel(),...MODELES_GEMINI.filter(m=>m!==modeleGeminiActuel())];
+  let erreur404=null;
+  for(const m of candidats){
+    try{
+      const texte=await appelGeminiModele(m,systeme,utilisateur,opts);
+      if(S.reglages.modeleGemini!==m){ S.reglages.modeleGemini=m; sauver(); }
+      return texte;
+    }catch(e){
+      if(e&&e.statut===404){ erreur404=e; continue; } // modèle retiré → candidat suivant
+      throw e;
+    }
+  }
+  // Dernier recours : demander à l'API la liste des modèles réellement disponibles.
+  const decouvert=await decouvrirModeleGemini();
+  if(decouvert){
+    const texte=await appelGeminiModele(decouvert,systeme,utilisateur,opts);
+    S.reglages.modeleGemini=decouvert; sauver();
+    return texte;
+  }
+  throw erreur404||new Erreur429Friendly("Aucun modèle Gemini disponible avec cette clé. Réessaie plus tard, ou vérifie ta clé dans Profil.");
+}
+async function decouvrirModeleGemini(){
+  try{
+    const rep=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100&key="+encodeURIComponent(S.cles.gemini));
+    if(!rep.ok) return null;
+    const data=await rep.json();
+    const utilisables=(data.models||[]).filter(m=>
+      (m.supportedGenerationMethods||[]).includes("generateContent")&&
+      /flash/i.test(m.name)&&!/image|live|tts|audio|embedding|robotics/i.test(m.name));
+    // Préférence : flash « plein » plutôt que lite, et le plus récent d'abord.
+    utilisables.sort((a,b)=>(/lite/i.test(a.name)?1:0)-(/lite/i.test(b.name)?1:0)||b.name.localeCompare(a.name));
+    return utilisables.length?utilisables[0].name.replace(/^models\//,""):null;
+  }catch(e){ return null; }
+}
+async function appelGeminiModele(modele,systeme,utilisateur,opts){
   opts=opts||{};
   const cle=S.cles.gemini;
   if(!cle) throw new Erreur429Friendly("Aucune clé Gemini enregistrée. Va dans Profil → Clés API.");
-  // Modèle Flash : le bon rapport qualité/quota du niveau gratuit.
-  const url="https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="+encodeURIComponent(cle);
+  const url="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(modele)+":generateContent?key="+encodeURIComponent(cle);
   const contents=(opts.historique||[]).map(m=>({role:m.role==="ia"?"model":"user",parts:[{text:m.texte}]}));
   contents.push({role:"user",parts:[{text:utilisateur}]});
   const corps={
@@ -862,14 +904,16 @@ async function fetchAvecBackoff(url,options,surEtape){
       await new Promise(r=>setTimeout(r,delais[t]));
       continue;
     }
-    if(rep.status===429) throw new Erreur429Friendly("L'IA a atteint sa limite gratuite du moment. Ce n'est pas grave : réessaie dans quelques minutes.");
+    const lancer=(msg)=>{ const e=new Erreur429Friendly(msg); e.statut=rep.status; throw e; };
+    if(rep.status===429) lancer("L'IA a atteint sa limite gratuite du moment. Ce n'est pas grave : réessaie dans quelques minutes.");
+    if(rep.status===404) lancer("Le modèle d'IA demandé n'existe plus chez le fournisseur."); // intercepté par la bascule automatique de modèle
     if(rep.status===400||rep.status===401||rep.status===403){
       let det=""; try{ const j=await rep.json(); det=(j.error&&j.error.message)||""; }catch(e){}
       if(/key|API_KEY|auth/i.test(det)||rep.status===401||rep.status===403)
-        throw new Erreur429Friendly("La clé API semble invalide ou incomplète. Vérifie-la dans Profil → Clés API (elle a peut-être été mal collée).");
-      throw new Erreur429Friendly("La demande a été refusée par le service ("+rep.status+"). Réessaie, et si ça persiste, vérifie ta clé dans Profil.");
+        lancer("La clé API semble invalide ou incomplète. Vérifie-la dans Profil → Clés API (elle a peut-être été mal collée).");
+      lancer("La demande a été refusée par le service ("+rep.status+"). Réessaie, et si ça persiste, vérifie ta clé dans Profil.");
     }
-    throw new Erreur429Friendly("Le service répond avec une erreur ("+rep.status+"). Réessaie dans quelques minutes.");
+    lancer("Le service répond avec une erreur ("+rep.status+"). Réessaie dans quelques minutes.");
   }
 }
 
@@ -1173,11 +1217,11 @@ function obActe2(){
     <div class="etape"><div class="etapeNum">1</div><div class="etapeCorps">Ouvre <b>Google AI Studio</b> dans Safari.<div class="etapeVisuel"><span class="faux">🌐 aistudio.google.com</span></div></div></div>
     <div class="etape"><div class="etapeNum">2</div><div class="etapeCorps">Connecte-toi avec un <b>compte Google</b> (celui de ton Gmail convient).</div></div>
     <div class="etape"><div class="etapeNum">3</div><div class="etapeCorps">Touche <b>« Get API key »</b> puis <b>« Create API key »</b>.<div class="etapeVisuel"><span class="faux">🔑 Get API key</span> → <span class="faux">＋ Create API key</span></div></div></div>
-    <div class="etape"><div class="etapeNum">4</div><div class="etapeCorps">Copie la clé (elle ressemble à <b>AIza…</b>) en touchant l'icône de copie.</div></div>
+    <div class="etape"><div class="etapeNum">4</div><div class="etapeCorps">Copie la clé (elle ressemble à <b>AQ.…</b> ou <b>AIza…</b>) en touchant l'icône de copie.</div></div>
     <div class="etape"><div class="etapeNum">5</div><div class="etapeCorps">Reviens ici et colle-la ci-dessous.</div></div>
     <button class="btn secondaire" onclick="window.open('https://aistudio.google.com/apikey','_blank')">Ouvrir Google AI Studio ↗</button>
     <label class="etiquette">Ta clé Gemini</label>
-    <input class="champ" id="obCleGemini" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" placeholder="AIza…" value="${ech(S.cles.gemini)}">
+    <input class="champ" id="obCleGemini" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" placeholder="AQ.… ou AIza…" value="${ech(S.cles.gemini)}">
     <button class="btn mHaut" id="btnTestGemini" onclick="testerGemini()">Tester la clé</button>
     <div id="resTestGemini" class="mHaut8">${_cleGeminiOk?'<div class="encart succes">✓ Clé valide, l\'IA est connectée</div>':""}</div>
   </div>
@@ -2184,7 +2228,7 @@ function rendreProfil(){
 
   <div class="carte"><div class="carteTitre"><span class="ico">🔑</span>Clés API</div>
   <label class="etiquette">Clé Gemini (l'intelligence)</label>
-  <input class="champ" id="prCleGemini" type="text" autocapitalize="none" autocomplete="off" value="${ech(S.cles.gemini)}" placeholder="AIza…">
+  <input class="champ" id="prCleGemini" type="text" autocapitalize="none" autocomplete="off" value="${ech(S.cles.gemini)}" placeholder="AQ.… ou AIza…">
   <label class="etiquette">Clé Twelve Data (les cours)</label>
   <input class="champ" id="prCleTD" type="text" autocapitalize="none" autocomplete="off" value="${ech(S.cles.twelveData)}" placeholder="a1b2c3…">
   <button class="btn mHaut8" onclick="testerClesProfil()">Enregistrer et tester</button>
