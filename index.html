@@ -1705,7 +1705,24 @@ function rendreBriefing(){
     if(passes.length){ h+='<div class="carteTitre mHaut"><span class="ico">🗄️</span>Briefings précédents</div><div class="listeGroupe">'+passes.map(p=>'<button class="ligneListe" onclick="voirBriefingArchive(\''+p.date+'\')"><div class="dPrincipal"><div class="dTitre">Briefing du '+fmtDate(p.date)+'</div><div class="dSous">'+ech((p.contenu.meteo||"").slice(0,70))+'…</div></div><span class="chevron">›</span></button>').join("")+"</div>"; }
     return h+rendreChat();
   }
-  return h+rendreCartesBriefing(b.contenu)+rendreChat();
+  h+=rendreCartesBriefing(b.contenu);
+  // Briefing généré sans recherche (quota atteint au moment de la génération,
+  // ex. à 00 h 06 alors que le quota Google se recharge vers 9 h heure
+  // française) : on propose de le régénérer avec l'actualité dès que possible.
+  if(b.contenu._sansRecherche&&!_briefingEnCours){
+    h+='<div class="carte plate centre"><p class="petit">Le quota de recherche se recharge vers <b>9 h du matin</b> (heure française). Dès qu\'il est revenu :</p><button class="btn secondaire compact mHaut8" onclick="regenererBriefingDuJour()">↻ Régénérer ce briefing avec l\'actualité</button></div>';
+  }
+  return h+rendreChat();
+}
+function regenererBriefingDuJour(){
+  // On efface le briefing du jour ET les idées qu'il avait archivées au journal
+  // (pour éviter les doublons), puis on force un nouvel essai de recherche.
+  const jour=aujourdhuiISO();
+  S.briefings=S.briefings.filter(x=>x.date!==jour);
+  S.journal=S.journal.filter(j=>!(j.type==="idee_ia"&&j.date.slice(0,10)===jour));
+  delete S.reglages.rechercheKoJour;
+  sauver();
+  lancerBriefing();
 }
 
 async function lancerBriefing(){
@@ -2839,12 +2856,19 @@ function rendreProfil(){
   ${"speechSynthesis" in window?`
   <div style="display:flex;justify-content:space-between;align-items:center"><span>Boutons d'écoute sur les textes</span>
   <button class="btn compact ${S.reglages.lecteurActif!==false?"":"secondaire"}" onclick="S.reglages.lecteurActif=${S.reglages.lecteurActif!==false?"false":"true"};sauver();if(S.reglages.lecteurActif===false){arreterLecture();document.querySelectorAll('.btnLire').forEach(b=>b.remove());document.querySelectorAll('.aLecteur').forEach(x=>x.classList.remove('aLecteur'))}rendre()">${S.reglages.lecteurActif!==false?"Activé ✓":"Désactivé"}</button></div>
-  <p class="petit mHaut8">Sur chaque texte, touche le petit portrait de Léo : il te le lit à voix haute, avec la voix du téléphone (rien ne part sur internet). Retouche-le pour mettre en pause.</p>
-  <label class="etiquette">Sa voix</label>
+  <p class="petit mHaut8">Sur chaque texte, touche le petit portrait de Léo : il te le lit à voix haute. Retouche-le pour mettre en pause.</p>
+  ${S.cles.gemini?`<label class="etiquette">Qualité de sa voix</label>
+  <div class="segments"><button class="${S.reglages.voixLeoMode!=="ia"?"actif":""}" onclick="S.reglages.voixLeoMode='locale';sauver();rendre()">📱 Téléphone</button><button class="${S.reglages.voixLeoMode==="ia"?"actif":""}" onclick="S.reglages.voixLeoMode='ia';sauver();rendre()">✨ IA (naturelle)</button></div>`:""}
+  ${S.reglages.voixLeoMode==="ia"&&S.cles.gemini?`
+  <div class="encart info">✨ <b>Voix IA Gemini</b> : une vraie voix naturelle, générée par ta clé. Le niveau gratuit ne permet que <b>quelques lectures par jour</b> — quand le quota est atteint${ttsEpuiseAujourdhui()?" <b>(c'est le cas aujourd'hui)</b>":""}, Léo repasse tout seul sur la voix du téléphone.</div>
+  <label class="etiquette">Son timbre</label>
+  <select class="champ" onchange="S.reglages.voixIA=this.value;sauver()">${VOIX_IA.map(v=>'<option value="'+v.id+'"'+((S.reglages.voixIA||"Algieba")===v.id?" selected":"")+">"+ech(v.nom)+"</option>").join("")}</select>
+  ${ttsEpuiseAujourdhui()?'<button class="btn secondaire compact mHaut8" onclick="delete S.reglages.ttsKoJour;sauver();toast(\'✨ Je retenterai la voix IA à la prochaine lecture\');rendre()">Retenter la voix IA</button>':""}`:`
+  <label class="etiquette">Sa voix (téléphone)</label>
   <select class="champ" onchange="S.reglages.voixLeo=this.value||undefined;sauver()"><option value="">Automatique (voix masculine douce)</option>${voixFrancaises().map(v=>'<option value="'+ech(v.name)+'"'+(S.reglages.voixLeo===v.name?" selected":"")+">"+ech(v.name)+"</option>").join("")}</select>
-  <p class="petit mHaut8">💡 Pour une voix encore plus naturelle sur iPhone : Réglages iOS → Accessibilité → Contenu énoncé → Voix → Français → télécharge « Thomas (améliorée) », puis choisis-la ici.</p>
+  <div class="encart alerte mHaut8">🎧 <b>La voix par défaut d'iOS sonne robotique ?</b> C'est la version « compacte ». Télécharge la version améliorée — 2 minutes, gratuit, et le jour et la nuit :<br>Réglages iOS → <b>Accessibilité</b> → <b>Contenu énoncé</b> → <b>Voix</b> → <b>Français</b> → <b>Thomas</b> → télécharge <b>« Thomas (amélioré) »</b> (ou une voix Premium). Léo la choisira automatiquement.</div>
   <label class="etiquette">Sa vitesse</label>
-  <input type="range" min="0.7" max="1.2" step="0.05" value="${S.reglages.vitesseLeo||0.95}" style="width:100%;min-height:44px" onchange="S.reglages.vitesseLeo=+this.value;sauver()">
+  <input type="range" min="0.7" max="1.2" step="0.05" value="${S.reglages.vitesseLeo||0.95}" style="width:100%;min-height:44px" onchange="S.reglages.vitesseLeo=+this.value;sauver()">`}
   <button class="btn secondaire mHaut8" onclick="testerVoixLeo()">🔊 Écouter Léo se présenter</button>`:
   '<p class="petit">La synthèse vocale n\'est pas disponible sur cet appareil.</p>'}</div>
 
@@ -3004,7 +3028,7 @@ function appliquerRestauration(mode){
    ============================================================ */
 const AVATAR_LEO='<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="34" r="26" fill="#F2D5B8"/><path d="M10 30 Q12 12 32 10 Q52 12 54 30 L54 26 Q54 8 32 6 Q10 8 10 26 Z" fill="#6B7280"/><rect x="6" y="26" width="52" height="5" rx="2.5" fill="#1E5A8A"/><rect x="22" y="4" width="20" height="8" rx="2" fill="#1E5A8A"/><circle cx="22" cy="34" r="6.5" fill="none" stroke="#1F2937" stroke-width="2"/><circle cx="42" cy="34" r="6.5" fill="none" stroke="#1F2937" stroke-width="2"/><line x1="28.5" y1="34" x2="35.5" y2="34" stroke="#1F2937" stroke-width="2"/><circle cx="22" cy="34" r="2" fill="#1F2937"/><circle cx="42" cy="34" r="2" fill="#1F2937"/><path d="M24 46 Q32 50 40 46" fill="none" stroke="#8A5A3B" stroke-width="2.5" stroke-linecap="round" class="boucheLeo"/><path d="M26 44 Q32 47 38 44 L38 45 Q32 49 26 45 Z" fill="#8A5A3B" opacity=".5"/></svg>';
 
-let _lecChunks=[],_lecIndex=0,_lecActif=false,_lecPause=false,_lecBloc=null,_lecTitre="";
+let _lecChunks=[],_lecIndex=0,_lecActif=false,_lecPause=false,_lecBloc=null,_lecTitre="",_lecViaIA=false;
 
 function lecteurDispo(){ return ("speechSynthesis" in window)&&S.reglages.lecteurActif!==false; }
 
@@ -3018,9 +3042,18 @@ function voixDeLeo(){
   const voix=voixFrancaises();
   if(!voix.length) return null;
   if(S.reglages.voixLeo){ const v=voix.find(x=>x.name===S.reglages.voixLeo); if(v) return v; }
-  const pref=["thomas","nicolas","daniel","paul","henri","google français","français"];
-  for(const p of pref){ const v=voix.find(x=>x.name.toLowerCase().includes(p)); if(v) return v; }
-  return voix[0];
+  // Les voix « améliorées / premium » téléchargées sur iOS passent en priorité :
+  // elles sont infiniment plus naturelles que les voix compactes par défaut.
+  const score=(v)=>{
+    const n=v.name.toLowerCase(), u=(v.voiceURI||"").toLowerCase();
+    let s=0;
+    if(/premium/.test(n+u)) s+=40; if(/amélior|enhanced/.test(n+u)) s+=30;
+    const prefs=["thomas","nicolas","daniel","paul","henri","google français"];
+    const ix=prefs.findIndex(p=>n.includes(p)); if(ix>=0) s+=20-ix;
+    if(/compact/.test(u)) s-=15;
+    return s;
+  };
+  return voix.slice().sort((a,b)=>score(b)-score(a))[0];
 }
 // iOS charge les voix en différé : on écoute l'événement pour être prêt.
 if("speechSynthesis" in window){ try{ window.speechSynthesis.onvoiceschanged=()=>{}; }catch(e){} }
@@ -3059,7 +3092,12 @@ function lireBloc(bloc,ev){
   if(texte.length<3){ toast("Rien à lire ici."); return; }
   const titreEl=bloc.querySelector(".carteTitre,.dTitre,b,h1,h2,h3");
   _lecTitre=titreEl?texteVersParole(titreEl.textContent).slice(0,42):"ce passage";
-  _lecChunks=decouperEnPhrases(texte); _lecIndex=0; _lecActif=true; _lecPause=false; _lecBloc=bloc;
+  // Voix IA (Gemini TTS) si activée et quota du jour intact ; sinon voix locale.
+  if(typeof voixIAActive==="function"&&voixIAActive()&&!ttsEpuiseAujourdhui()&&navigator.onLine){
+    lireBlocIA(bloc,texte);
+    return;
+  }
+  _lecChunks=decouperEnPhrases(texte); _lecIndex=0; _lecActif=true; _lecPause=false; _lecBloc=bloc; _lecViaIA=false;
   bloc.classList.add("enLecture");
   majBarreLecteur();
   parlerChunkSuivant();
@@ -3079,13 +3117,17 @@ function parlerChunkSuivant(){
    le morceau en cours pour reprendre au même endroit. */
 function basculerPauseLecture(){
   if(!_lecActif) return;
-  if(_lecPause){ _lecPause=false; parlerChunkSuivant(); }
+  if(_lecViaIA){ // la voix IA permet une vraie pause/reprise au sample près
+    if(_lecPause){ _lecPause=false; if(_audioLeo) _audioLeo.play().catch(()=>{}); }
+    else{ _lecPause=true; if(_audioLeo) _audioLeo.pause(); }
+  }else if(_lecPause){ _lecPause=false; parlerChunkSuivant(); }
   else{ _lecPause=true; try{ window.speechSynthesis.cancel(); }catch(e){} }
   majBarreLecteur();
 }
 function arreterLecture(){
-  _lecActif=false; _lecPause=false; _lecChunks=[]; _lecIndex=0;
+  _lecActif=false; _lecPause=false; _lecChunks=[]; _lecIndex=0; _lecViaIA=false;
   try{ window.speechSynthesis.cancel(); }catch(e){}
+  if(typeof _audioLeo!=="undefined"&&_audioLeo){ try{ _audioLeo.pause(); }catch(e){} _audioLeo=null; }
   if(_lecBloc){ _lecBloc.classList.remove("enLecture"); _lecBloc=null; }
   majBarreLecteur();
 }
@@ -3147,6 +3189,130 @@ function testerVoixLeo(){
   const faux=document.createElement("div");
   faux.textContent="Bonjour ! Moi c'est Léo, ton professeur. Quand tu n'as pas le courage de lire, touche mon petit portrait et je te lis le texte. On apprend mieux à deux !";
   lireBloc(faux);
+}
+/* ============================================================
+   LÉO — VOIX IA (qualité naturelle, via la clé Gemini)
+   La synthèse locale d'iOS peut sonner robotique (surtout la
+   voix « compacte » par défaut). Ici : les modèles TTS de
+   Gemini, voix neuronales naturelles, pilotées par consigne
+   (« voix d'homme douce, calme, posée de professeur »).
+   Réalités du niveau gratuit : quota TTS restreint (quelques
+   lectures par jour) → gros morceaux (~1 300 caractères),
+   cache de session, et REPLI AUTOMATIQUE sur la voix locale
+   dès que le quota est atteint. L'audio arrive en PCM 16 bits
+   24 kHz : on l'emballe en WAV pour le lire nativement.
+   ============================================================ */
+const VOIX_IA=[
+ {id:"Algieba",nom:"Grave et soyeuse (recommandée)"},
+ {id:"Charon",nom:"Posée, informative"},
+ {id:"Enceladus",nom:"Feutrée, tout en souffle"},
+ {id:"Iapetus",nom:"Claire et nette"},
+ {id:"Sulafat",nom:"Chaleureuse"}
+];
+const CONSIGNE_TTS="Lis ce texte en français, d'une voix d'homme douce, calme et posée — le ton d'un professeur bienveillant qui prend son temps. Marque de courtes pauses entre les idées :\n\n";
+let _audioLeo=null,_cacheAudio={};
+
+function voixIAActive(){ return S.reglages.voixLeoMode==="ia"&&(S.cles.gemini||"").length>0; }
+function ttsEpuiseAujourdhui(){ return S.reglages.ttsKoJour===aujourdhuiISO(); }
+
+/* PCM 16 bits mono 24 kHz (base64) → blob WAV lisible par <audio>. */
+function pcmVersWav(b64,tauxEch){
+  tauxEch=tauxEch||24000;
+  const bin=atob(b64), n=bin.length;
+  const buf=new ArrayBuffer(44+n), dv=new DataView(buf);
+  const ecrire=(pos,txt)=>{ for(let i=0;i<txt.length;i++) dv.setUint8(pos+i,txt.charCodeAt(i)); };
+  ecrire(0,"RIFF"); dv.setUint32(4,36+n,true); ecrire(8,"WAVE"); ecrire(12,"fmt ");
+  dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true);
+  dv.setUint32(24,tauxEch,true); dv.setUint32(28,tauxEch*2,true); dv.setUint16(32,2,true); dv.setUint16(34,16,true);
+  ecrire(36,"data"); dv.setUint32(40,n,true);
+  for(let i=0;i<n;i++) dv.setUint8(44+i,bin.charCodeAt(i));
+  return new Blob([buf],{type:"audio/wav"});
+}
+/* Cherche récursivement une longue chaîne base64 audio dans une réponse JSON
+   (robustesse : les formats varient selon les générations de modèles TTS). */
+function trouverAudioBase64(obj,prof){
+  if(prof>8||obj==null) return null;
+  if(typeof obj==="string") return (obj.length>2000&&/^[A-Za-z0-9+/=\s]+$/.test(obj.slice(0,200)))?obj.replace(/\s/g,""):null;
+  if(typeof obj!=="object") return null;
+  for(const k of Object.keys(obj)){ const r=trouverAudioBase64(obj[k],(prof||0)+1); if(r) return r; }
+  return null;
+}
+/* Appel TTS : d'abord la voie « generateContent » (format historique bien
+   connu), puis la voie « interactions » (générations récentes) si 404.
+   La voie qui répond est mémorisée. */
+async function ttsGemini(texte){
+  const cle=S.cles.gemini, voix=S.reglages.voixIA||"Algieba";
+  const voies=S.reglages.ttsVoie==="interactions"?["interactions","legacy"]:["legacy","interactions"];
+  let derniere=null;
+  for(const voie of voies){
+    try{
+      let rep;
+      if(voie==="legacy"){
+        rep=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+(S.reglages.modeleTTS||"gemini-2.5-flash-preview-tts")+":generateContent?key="+encodeURIComponent(cle),{
+          method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({contents:[{parts:[{text:CONSIGNE_TTS+texte}]}],
+            generationConfig:{responseModalities:["AUDIO"],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voix}}}}})});
+      }else{
+        rep=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions?key="+encodeURIComponent(cle),{
+          method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({model:"gemini-3.1-flash-tts-preview",input:CONSIGNE_TTS+texte,
+            response_format:{type:"audio"},generation_config:{speech_config:[{voice:voix}]}})});
+      }
+      if(rep.status===429){ const e=new Error("quota"); e.statut=429; throw e; }
+      if(!rep.ok){ const e=new Error("http "+rep.status); e.statut=rep.status; throw e; }
+      const data=await rep.json();
+      const b64=trouverAudioBase64(data,0);
+      if(!b64) throw new Error("pas d'audio dans la réponse");
+      if(S.reglages.ttsVoie!==voie){ S.reglages.ttsVoie=voie; sauver(); }
+      return URL.createObjectURL(pcmVersWav(b64));
+    }catch(e){
+      derniere=e;
+      if(e.statut===429) throw e;          // quota : inutile d'essayer l'autre voie
+      // 404 / format inattendu → on tente l'autre génération de l'API
+    }
+  }
+  throw derniere||new Error("TTS indisponible");
+}
+/* Découpage en gros morceaux (économie de quota). */
+function decouperGros(t,taille){
+  taille=taille||1300;
+  const phrases=t.match(/[^.!?]+[.!?]*/g)||[t];
+  const out=[]; let cour="";
+  for(const p of phrases){ if((cour+p).length>taille&&cour){ out.push(cour.trim()); cour=p; } else cour+=p; }
+  if(cour.trim()) out.push(cour.trim());
+  return out;
+}
+/* Lecture IA d'un bloc : morceaux joués en chaîne, préchargement du suivant
+   pendant la lecture du courant. Toute erreur → repli local transparent. */
+async function lireBlocIA(bloc,texte){
+  _lecChunks=decouperGros(texte); _lecIndex=0; _lecActif=true; _lecPause=false; _lecBloc=bloc; _lecViaIA=true;
+  bloc.classList.add("enLecture"); majBarreLecteur();
+  const cacheCle=(i)=>_lecChunks[i].length+"|"+_lecChunks[i].slice(0,60);
+  const obtenir=async(i)=>{ const k=cacheCle(i); if(!_cacheAudio[k]) _cacheAudio[k]=ttsGemini(_lecChunks[i]); return _cacheAudio[k]; };
+  try{
+    let url=await obtenir(0);
+    const suivant=(i)=>{ if(i+1<_lecChunks.length) obtenir(i+1).catch(()=>{}); }; // préchargement
+    const jouer=(i,u)=>new Promise((res,rej)=>{
+      if(!_lecActif){ res(); return; }
+      _audioLeo=new Audio(u); _audioLeo.onended=()=>res(); _audioLeo.onerror=()=>rej(new Error("lecture audio"));
+      _audioLeo.play().then(()=>suivant(i)).catch(rej);
+    });
+    for(let i=0;i<_lecChunks.length&&_lecActif;i++){
+      _lecIndex=i; majBarreLecteur();
+      if(i>0) url=await obtenir(i);
+      await jouer(i,url);
+      while(_lecPause&&_lecActif) await new Promise(r=>setTimeout(r,250));
+    }
+    if(_lecActif) arreterLecture();
+  }catch(e){
+    // Repli : voix locale pour la suite, sans casser l'expérience.
+    if(e&&e.statut===429){ S.reglages.ttsKoJour=aujourdhuiISO(); sauver(); toast("🔊 Quota gratuit de la voix IA atteint pour aujourd'hui — je continue avec la voix du téléphone.",3600); }
+    else toast("🔊 Voix IA indisponible — je continue avec la voix du téléphone.",3000);
+    const resteTexte=_lecChunks.slice(_lecIndex).join(" ");
+    _lecViaIA=false;
+    if(_lecActif&&resteTexte){ _lecChunks=decouperEnPhrases(resteTexte); _lecIndex=0; parlerChunkSuivant(); }
+    else arreterLecture();
+  }
 }
 /* ============================================================
    DÉMARRAGE
