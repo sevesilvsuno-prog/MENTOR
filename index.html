@@ -229,6 +229,25 @@ body.horsLigne #app{padding-top:calc(var(--sat) + 44px)}
 .badgeRond .rond{width:52px;height:52px;border-radius:50%;background:var(--accent-clair);display:flex;align-items:center;justify-content:center;font-size:24px}
 .badgeRond.gris .rond{background:#EDEEF1;filter:grayscale(1);opacity:.55}
 a{color:var(--accent)}
+/* ---- Lecteur vocal « Léo » ---- */
+.aLecteur{position:relative;padding-right:52px}
+.btnLire{position:absolute;top:8px;right:8px;width:40px;height:40px;padding:3px;border:1.5px solid var(--accent-clair);border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 1px 4px rgba(31,41,55,.10);z-index:2}
+.btnLire svg{width:100%;height:100%;display:block}
+.btnLire:active{transform:scale(.92)}
+.btnLire.enTitre{position:static;flex-shrink:0;margin-left:auto;margin-right:8px}
+.bulle.ia.aLecteur{padding-right:48px}
+.enLecture{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--rayon)}
+#lecteurBarre{position:fixed;left:12px;right:12px;bottom:calc(var(--sab) + 96px);z-index:70;display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:16px;box-shadow:0 4px 20px rgba(31,41,55,.18);padding:10px 12px}
+#lecteurBarre .avatarLeo{width:42px;height:42px;flex-shrink:0}
+#lecteurBarre .avatarLeo svg{width:100%;height:100%}
+#lecteurBarre .lecteurTexte{flex:1;min-width:0;line-height:1.25}
+#lecteurBarre .lecteurTexte b{display:block;font-size:14px}
+#lecteurBarre .lecteurTexte span{display:block;font-size:12px;color:var(--secondaire);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lecteurBtn{width:44px;height:44px;border:none;border-radius:50%;background:var(--accent-clair);color:var(--accent);font-size:17px;cursor:pointer;flex-shrink:0;font-family:inherit}
+.lecteurBtn:active{opacity:.7}
+@keyframes boucheParle{0%,100%{transform:scaleY(1)}50%{transform:scaleY(2.1)}}
+.avatarLeo.parle .boucheLeo{animation:boucheParle .45s ease-in-out infinite;transform-origin:center 46px}
+@media (prefers-reduced-motion:reduce){.avatarLeo.parle .boucheLeo{animation:none}}
 .enTete{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 4px}
 .pointille{border:none;border-top:1.5px dashed var(--bordure);margin:12px 0}
 .sourceLien{font-size:12px;color:var(--tertiaire);word-break:break-all}
@@ -674,15 +693,23 @@ function lierTermes(html){
   for(let i=0;i<morceaux.length;i++){
     if(morceaux[i].startsWith("<")) continue;
     let txt=morceaux[i];
+    // Les spans déjà insérés sont mis de côté sous forme de jetons \x00n\x00 :
+    // sans cela, un terme court (« ETF ») pourrait matcher À L'INTÉRIEUR du
+    // HTML d'un terme long déjà lié (« ETF capitalisant ») et casser la page.
+    const reserves=[];
     for(const terme of _termesTriees){
       if(deja.has(terme)) continue;
       const re=new RegExp("(^|[^\\wÀ-ÿ-])("+terme.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")(s?)(?=$|[^\\wÀ-ÿ-])","i");
       if(re.test(txt)){
-        txt=txt.replace(re,(m,av,mot,pl)=>av+'<span class="terme" data-terme="'+ech(terme)+'">'+mot+pl+"</span>");
+        txt=txt.replace(re,(m,av,mot,pl)=>{
+          const id=reserves.length;
+          reserves.push('<span class="terme" data-terme="'+ech(terme)+'">'+mot+pl+"</span>");
+          return av+"\x00"+id+"\x00";
+        });
         deja.add(terme);
       }
     }
-    morceaux[i]=txt;
+    morceaux[i]=txt.replace(/\x00(\d+)\x00/g,(m,id)=>reserves[+id]);
   }
   return morceaux.join("");
 }
@@ -2271,6 +2298,19 @@ function rendreProfil(){
     ${S.cles.fournisseurIA==="claude"?'<label class="etiquette">Clé Claude (console.anthropic.com)</label><input class="champ" type="password" value="'+ech(S.cles.claude)+'" onchange="S.cles.claude=this.value.trim();sauver()" placeholder="sk-ant-…"><p class="petit mHaut8">Même mécanique que Gemini : recherche web intégrée, mêmes formats. Service payant à l\'usage.</p>':""}
   </div></div>
 
+  <div class="carte"><div class="carteTitre"><span class="ico">🧑‍🏫</span>Léo, le lecteur vocal</div>
+  ${"speechSynthesis" in window?`
+  <div style="display:flex;justify-content:space-between;align-items:center"><span>Boutons d'écoute sur les textes</span>
+  <button class="btn compact ${S.reglages.lecteurActif!==false?"":"secondaire"}" onclick="S.reglages.lecteurActif=${S.reglages.lecteurActif!==false?"false":"true"};sauver();if(S.reglages.lecteurActif===false){arreterLecture();document.querySelectorAll('.btnLire').forEach(b=>b.remove());document.querySelectorAll('.aLecteur').forEach(x=>x.classList.remove('aLecteur'))}rendre()">${S.reglages.lecteurActif!==false?"Activé ✓":"Désactivé"}</button></div>
+  <p class="petit mHaut8">Sur chaque texte, touche le petit portrait de Léo : il te le lit à voix haute, avec la voix du téléphone (rien ne part sur internet). Retouche-le pour mettre en pause.</p>
+  <label class="etiquette">Sa voix</label>
+  <select class="champ" onchange="S.reglages.voixLeo=this.value||undefined;sauver()"><option value="">Automatique (voix masculine douce)</option>${voixFrancaises().map(v=>'<option value="'+ech(v.name)+'"'+(S.reglages.voixLeo===v.name?" selected":"")+">"+ech(v.name)+"</option>").join("")}</select>
+  <p class="petit mHaut8">💡 Pour une voix encore plus naturelle sur iPhone : Réglages iOS → Accessibilité → Contenu énoncé → Voix → Français → télécharge « Thomas (améliorée) », puis choisis-la ici.</p>
+  <label class="etiquette">Sa vitesse</label>
+  <input type="range" min="0.7" max="1.2" step="0.05" value="${S.reglages.vitesseLeo||0.95}" style="width:100%;min-height:44px" onchange="S.reglages.vitesseLeo=+this.value;sauver()">
+  <button class="btn secondaire mHaut8" onclick="testerVoixLeo()">🔊 Écouter Léo se présenter</button>`:
+  '<p class="petit">La synthèse vocale n\'est pas disponible sur cet appareil.</p>'}</div>
+
   <div class="carte"><div class="carteTitre"><span class="ico">⚙️</span>Réglages</div>
   <label class="etiquette">Durée du cache des cours (minutes)</label>
   <select class="champ" onchange="S.reglages.cacheMinutes=+this.value;sauver()">${[5,15,30,60].map(m=>'<option value="'+m+'"'+(S.reglages.cacheMinutes===m?" selected":"")+">"+m+" min</option>").join("")}</select>
@@ -2413,6 +2453,163 @@ function appliquerRestauration(mode){
     '<p>Tout est revenu :</p><div class="carte plate"><p>📔 Journal : '+avant.j+" → "+S.journal.length+" entrées</p><p>💼 Positions réelles : "+avant.p+" → "+S.positionsReelles.length+"</p><p>🎓 Leçons validées : "+S.ecole.leconsValidees.length+"</p><p>👤 Profil : "+(S.profil.fait?"restauré":"—")+"</p></div>"+
     '<button class="btn mHaut" onclick="fermerSheet();rendre()">Reprendre où j\'en étais</button>');
   rendre();
+}
+/* ============================================================
+   LECTEUR VOCAL — « Léo » 🧑‍🏫
+   Pour ceux qui n'ont pas le courage de lire : chaque bloc de
+   texte reçoit un petit bouton-personnage ; un tap, et Léo lit
+   le texte à voix haute (synthèse vocale du téléphone, 100 %
+   locale et gratuite — aucun appel réseau).
+   Voix : masculine française douce en priorité (« Thomas » sur
+   iOS), réglable dans Profil → Réglages. Les phrases sont
+   découpées en petits morceaux : contournement du bug iOS qui
+   coupe les longues lectures.
+   ============================================================ */
+const AVATAR_LEO='<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="34" r="26" fill="#F2D5B8"/><path d="M10 30 Q12 12 32 10 Q52 12 54 30 L54 26 Q54 8 32 6 Q10 8 10 26 Z" fill="#6B7280"/><rect x="6" y="26" width="52" height="5" rx="2.5" fill="#1E5A8A"/><rect x="22" y="4" width="20" height="8" rx="2" fill="#1E5A8A"/><circle cx="22" cy="34" r="6.5" fill="none" stroke="#1F2937" stroke-width="2"/><circle cx="42" cy="34" r="6.5" fill="none" stroke="#1F2937" stroke-width="2"/><line x1="28.5" y1="34" x2="35.5" y2="34" stroke="#1F2937" stroke-width="2"/><circle cx="22" cy="34" r="2" fill="#1F2937"/><circle cx="42" cy="34" r="2" fill="#1F2937"/><path d="M24 46 Q32 50 40 46" fill="none" stroke="#8A5A3B" stroke-width="2.5" stroke-linecap="round" class="boucheLeo"/><path d="M26 44 Q32 47 38 44 L38 45 Q32 49 26 45 Z" fill="#8A5A3B" opacity=".5"/></svg>';
+
+let _lecChunks=[],_lecIndex=0,_lecActif=false,_lecPause=false,_lecBloc=null,_lecTitre="";
+
+function lecteurDispo(){ return ("speechSynthesis" in window)&&S.reglages.lecteurActif!==false; }
+
+/* Choix de la voix : préférence stockée, sinon voix masculine française
+   (Thomas = la voix homme française historique d'iOS), sinon toute voix fr. */
+function voixFrancaises(){
+  try{ return window.speechSynthesis.getVoices().filter(v=>(v.lang||"").toLowerCase().startsWith("fr")); }
+  catch(e){ return []; }
+}
+function voixDeLeo(){
+  const voix=voixFrancaises();
+  if(!voix.length) return null;
+  if(S.reglages.voixLeo){ const v=voix.find(x=>x.name===S.reglages.voixLeo); if(v) return v; }
+  const pref=["thomas","nicolas","daniel","paul","henri","google français","français"];
+  for(const p of pref){ const v=voix.find(x=>x.name.toLowerCase().includes(p)); if(v) return v; }
+  return voix[0];
+}
+// iOS charge les voix en différé : on écoute l'événement pour être prêt.
+if("speechSynthesis" in window){ try{ window.speechSynthesis.onvoiceschanged=()=>{}; }catch(e){} }
+
+/* Nettoyage du texte pour l'oreille : émojis et symboles muets retirés,
+   abréviations financières développées. */
+function texteVersParole(t){
+  return String(t||"")
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2B00}-\u{2BFF}\u{1F1E6}-\u{1F1FF}]/gu," ")
+    .replace(/‹|›|«|»/g," ").replace(/·|•|→|⬇︎|✓|✗|✕|✨|—/g,", ")
+    .replace(/\bPRU\b/g,"P.R.U").replace(/\bETF\b/g,"E.T.F").replace(/\bPEA\b/g,"P.E.A")
+    .replace(/\bCTO\b/g,"C.T.O").replace(/\bDCA\b/g,"D.C.A").replace(/\bCFD\b/g,"C.F.D")
+    .replace(/\bPFU\b/g,"P.F.U").replace(/\bAMF\b/g,"A.M.F").replace(/\bPER\b/g,"P.E.R")
+    .replace(/%/g," pour cent").replace(/\s€/g," euros").replace(/€/g," euros")
+    .replace(/\s+/g," ").trim();
+}
+function decouperEnPhrases(t){
+  const morceaux=t.match(/[^.!?;:]+[.!?;:]*/g)||[t];
+  const chunks=[]; let cour="";
+  for(const m of morceaux){
+    if((cour+m).length>190&&cour){ chunks.push(cour.trim()); cour=m; }
+    else cour+=m;
+  }
+  if(cour.trim()) chunks.push(cour.trim());
+  return chunks.filter(c=>c.length>1);
+}
+
+function lireBloc(bloc,ev){
+  if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  if(!("speechSynthesis" in window)){ toast("La lecture vocale n'est pas disponible sur cet appareil."); return; }
+  if(_lecActif&&_lecBloc===bloc){ basculerPauseLecture(); return; } // re-tap sur le même bloc = pause/reprise
+  arreterLecture();
+  const clone=bloc.cloneNode(true);
+  clone.querySelectorAll("button,input,textarea,select,svg,.btnLire").forEach(n=>n.remove());
+  const texte=texteVersParole(clone.innerText||clone.textContent||"");
+  if(texte.length<3){ toast("Rien à lire ici."); return; }
+  const titreEl=bloc.querySelector(".carteTitre,.dTitre,b,h1,h2,h3");
+  _lecTitre=titreEl?texteVersParole(titreEl.textContent).slice(0,42):"ce passage";
+  _lecChunks=decouperEnPhrases(texte); _lecIndex=0; _lecActif=true; _lecPause=false; _lecBloc=bloc;
+  bloc.classList.add("enLecture");
+  majBarreLecteur();
+  parlerChunkSuivant();
+}
+function parlerChunkSuivant(){
+  if(!_lecActif||_lecPause||_lecIndex>=_lecChunks.length){ if(_lecActif&&_lecIndex>=_lecChunks.length) arreterLecture(); return; }
+  const u=new SpeechSynthesisUtterance(_lecChunks[_lecIndex]);
+  try{ const v=voixDeLeo(); if(v) u.voice=v; }catch(e){} // certains navigateurs refusent l'affectation : la langue suffit alors
+  u.lang="fr-FR";
+  u.rate=S.reglages.vitesseLeo||0.95;  // légèrement ralenti : voix posée de professeur
+  u.pitch=0.9;                          // un peu plus grave : douceur
+  u.onend=()=>{ if(!_lecActif) return; _lecIndex++; parlerChunkSuivant(); };
+  u.onerror=()=>{ if(_lecActif) arreterLecture(); };
+  try{ window.speechSynthesis.speak(u); }catch(e){ arreterLecture(); }
+}
+/* iOS gère mal pause/resume natifs → pause maison : on coupe et on retiendra
+   le morceau en cours pour reprendre au même endroit. */
+function basculerPauseLecture(){
+  if(!_lecActif) return;
+  if(_lecPause){ _lecPause=false; parlerChunkSuivant(); }
+  else{ _lecPause=true; try{ window.speechSynthesis.cancel(); }catch(e){} }
+  majBarreLecteur();
+}
+function arreterLecture(){
+  _lecActif=false; _lecPause=false; _lecChunks=[]; _lecIndex=0;
+  try{ window.speechSynthesis.cancel(); }catch(e){}
+  if(_lecBloc){ _lecBloc.classList.remove("enLecture"); _lecBloc=null; }
+  majBarreLecteur();
+}
+function majBarreLecteur(){
+  let barre=document.getElementById("lecteurBarre");
+  if(!_lecActif){ if(barre) barre.remove(); return; }
+  if(!barre){ barre=document.createElement("div"); barre.id="lecteurBarre"; document.body.appendChild(barre); }
+  barre.innerHTML='<span class="avatarLeo'+(_lecPause?"":" parle")+'">'+AVATAR_LEO+'</span>'+
+    '<div class="lecteurTexte"><b>Léo '+(_lecPause?"est en pause":"te lit")+'</b><span>'+ech(_lecTitre)+"…</span></div>"+
+    '<button class="lecteurBtn" onclick="basculerPauseLecture()" aria-label="Pause / reprise">'+(_lecPause?"▶":"⏸")+"</button>"+
+    '<button class="lecteurBtn" onclick="arreterLecture()" aria-label="Arrêter la lecture">✕</button>';
+}
+
+/* ---- Injection automatique des boutons d'écoute ----
+   Un MutationObserver surveille l'app et la sheet : chaque bloc de texte
+   (cartes, encarts, bulles du chat, chaînes causales) reçoit son
+   bouton-Léo, quel que soit l'écran — présent et futur. */
+function injecterLecteurs(){
+  if(!lecteurDispo()) return;
+  const cibles=document.querySelectorAll("#app .carte, #app .encart, #app .bulle.ia, #sheet .carte, #sheet .encart");
+  cibles.forEach(bloc=>{
+    if(bloc.querySelector(":scope > .btnLire")) return;
+    if(bloc.querySelector(".chargeurAnneau")) return;               // pas pendant un chargement
+    if((bloc.innerText||"").trim().length<60) return;                // trop court pour mériter une lecture
+    const b=document.createElement("button");
+    b.className="btnLire"; b.setAttribute("aria-label","Écouter ce texte avec Léo"); b.title="Écouter avec Léo";
+    b.innerHTML=AVATAR_LEO;
+    b.onclick=(ev)=>lireBloc(bloc,ev);
+    bloc.classList.add("aLecteur");
+    bloc.insertBefore(b,bloc.firstChild);
+  });
+  // La sheet entière (définitions du glossaire, tutoriels…) : un bouton dans son titre.
+  const sheet=document.getElementById("sheet");
+  const titreSh=sheet&&sheet.querySelector(".sheetTitre");
+  if(titreSh&&!titreSh.querySelector(".btnLire")&&(sheet.innerText||"").length>80){
+    const b=document.createElement("button");
+    b.className="btnLire enTitre"; b.setAttribute("aria-label","Écouter avec Léo"); b.title="Écouter avec Léo";
+    b.innerHTML=AVATAR_LEO;
+    b.onclick=(ev)=>lireBloc(sheet,ev);
+    titreSh.insertBefore(b,titreSh.lastElementChild);
+  }
+  // Si le bloc en cours de lecture a disparu (navigation), on arrête proprement.
+  if(_lecBloc&&!document.body.contains(_lecBloc)) arreterLecture();
+}
+(function(){
+  if(!("speechSynthesis" in window)) return;
+  let planifie=false;
+  const obs=new MutationObserver(()=>{
+    if(planifie) return; planifie=true;
+    setTimeout(()=>{ planifie=false; try{ injecterLecteurs(); }catch(e){} },120);
+  });
+  obs.observe(document.getElementById("app"),{childList:true,subtree:true});
+  obs.observe(document.getElementById("sheet"),{childList:true,subtree:true});
+})();
+
+/* ---- Bouton d'essai pour l'écran Profil ---- */
+function testerVoixLeo(){
+  arreterLecture();
+  const faux=document.createElement("div");
+  faux.textContent="Bonjour ! Moi c'est Léo, ton professeur. Quand tu n'as pas le courage de lire, touche mon petit portrait et je te lis le texte. On apprend mieux à deux !";
+  lireBloc(faux);
 }
 /* ============================================================
    DÉMARRAGE
