@@ -594,6 +594,216 @@ quiz:[
 {q:"Que faire quand le marché panique et que tu es tenté d'agir ?",o:["Suivre son instinct","Relire son plan : il a déjà la réponse, écrite à froid","Consulter les réseaux sociaux"],b:1,e:"Le plan est ton toi-même rationnel qui parle à ton toi-même paniqué. C'est exactement pour ce moment qu'il existe."}]}
 );
 /* ============================================================
+   NIVEAU 4 — L'ATELIER DE L'ANALYSTE (leçons 27 à 34)
+   Se débloque quand les 26 leçons des fondations sont validées :
+   on apprend à lire une entreprise comme un professionnel.
+   ============================================================ */
+LECONS.push(
+{id:"l27",niveau:4,duree:8,badge:"🏗️",badgeNom:"Lecteur de bilan",titre:"Le bilan : la photo du patrimoine d'une entreprise",
+contenu:"<p><b>Le quoi.</b> Le bilan est la photographie, à une date donnée, de ce qu'une entreprise <b>possède</b> (l'actif : usines, stocks, trésorerie, brevets…) et de la façon dont c'est <b>financé</b> (le passif : capitaux apportés par les actionnaires + dettes). Les deux colonnes sont toujours égales — d'où le mot « bilan ».</p><p><b>Le pourquoi.</b> C'est le premier réflexe de l'analyste : avant de rêver aux profits futurs, on vérifie la solidité. Une entreprise très endettée est fragile : à la moindre tempête (récession, taux qui montent), les intérêts l'étouffent. Une entreprise riche en trésorerie peut traverser les crises, racheter des concurrents affaiblis, investir quand les autres coupent.</p><p><b>Le comment.</b> Trois regards simples : 1) La <b>trésorerie nette</b> : cash moins dettes financières — positif, c'est un matelas ; très négatif, c'est une épée au-dessus de la tête. 2) Les <b>capitaux propres</b> : ce qui appartient vraiment aux actionnaires ; s'ils fondent d'année en année, danger. 3) Le rapport <b>dette / capitaux propres</b> : au-delà de 100 %, l'entreprise appartient plus à ses banquiers qu'à ses actionnaires (sauf secteurs particuliers comme les services aux collectivités, structurellement endettés).</p><p><b>Le risque.</b> Comparer des bilans de secteurs différents n'a aucun sens : une banque, une biotech et un industriel ont des structures incomparables. On compare une entreprise à ses concurrentes directes et à son propre passé.</p>",
+exemple:"Entreprise A : 2 Md€ de trésorerie, 0,5 Md€ de dettes, capitaux propres en hausse depuis 10 ans → forteresse. Entreprise B : 0,2 Md€ de cash, 4 Md€ de dettes, capitaux propres divisés par deux en 5 ans → château de cartes. Les deux peuvent avoir le même bénéfice cette année : le bilan révèle celle qui survivra à la prochaine crise.",
+quiz:[
+{q:"Que montre le bilan d'une entreprise ?",o:["Ses ventes de l'année","La photo de ce qu'elle possède et de ses financements à une date donnée","Le cours de son action"],b:1,e:"Le bilan est une photographie du patrimoine : actif d'un côté, financements (capitaux propres + dettes) de l'autre."},
+{q:"Une dette financière bien supérieure aux capitaux propres signale…",o:["Une entreprise ambitieuse, c'est bon signe","Une fragilité : les banquiers pèsent plus que les actionnaires","Rien de particulier"],b:1,e:"Sauf secteurs spécifiques, un levier d'endettement élevé rend l'entreprise vulnérable aux tempêtes et aux hausses de taux."},
+{q:"Avec qui comparer le bilan d'une entreprise ?",o:["N'importe quelle entreprise cotée","Ses concurrentes directes et son propre historique","Les banques uniquement"],b:1,e:"Chaque secteur a sa structure normale : une comparaison n'a de sens qu'à secteur comparable."}]},
+
+{id:"l28",niveau:4,duree:8,badge:"🎬",badgeNom:"Lecteur de résultat",titre:"Le compte de résultat : le film de l'année",
+contenu:"<p><b>Le quoi.</b> Si le bilan est une photo, le compte de résultat est le <b>film de l'année</b> : en haut, le chiffre d'affaires (tout ce qui a été vendu) ; on descend en retirant les coûts étage par étage ; en bas, le bénéfice net. Entre les deux, les <b>marges</b> — les vrais indices de qualité.</p><p><b>Le pourquoi.</b> Deux entreprises qui vendent 1 milliard ne se valent pas : celle qui en garde 250 millions (marge nette 25 %) possède probablement un avantage durable — marque, brevet, position dominante ; celle qui en garde 20 millions (2 %) se bat sur les prix et vacille au premier choc. La marge, c'est le « pouvoir » d'une entreprise rendu visible.</p><p><b>Le comment.</b> Regarde trois choses, toujours sur <b>plusieurs années</b> : 1) Le chiffre d'affaires croît-il régulièrement (croissance réelle) ou par à-coups (cycles, acquisitions) ? 2) La <b>marge opérationnelle</b> (bénéfice d'exploitation ÷ ventes) est-elle stable ou en hausse ? Une marge qui s'érode année après année raconte une entreprise qui perd son avantage. 3) Le bénéfice net contient-il des éléments « exceptionnels » (vente d'une filiale, dépréciation) qui faussent la lecture ? Repères très grossiers : marge nette > 15 % = très belle affaire ; 5-15 % = correcte ; < 5 % = métier difficile.</p><p><b>Le risque.</b> Le bénéfice d'UNE seule année ne dit presque rien : il se maquille légalement de mille façons (provisions, calendrier des charges…). C'est la tendance sur 5 à 10 ans qui parle — et la leçon suivante montrera un chiffre encore plus difficile à maquiller.</p>",
+exemple:"LuxeCo vend 1 Md€ de sacs, marge nette 22 % → 220 M€ de bénéfice ; elle peut augmenter ses prix de 5 % sans perdre un client. DiscountCo vend 1 Md€ d'alimentaire, marge nette 2 % → 20 M€ ; une hausse de 2 % du coût de l'énergie efface la moitié de son bénéfice. Même taille apparente, deux mondes.",
+quiz:[
+{q:"Que mesure la marge nette ?",o:["La part des ventes qui devient du bénéfice","La croissance des ventes","Le niveau de la dette"],b:0,e:"Marge nette = bénéfice net ÷ chiffre d'affaires : combien chaque euro vendu laisse dans la caisse."},
+{q:"Une marge opérationnelle qui s'érode 4 années de suite raconte…",o:["Une entreprise qui perd progressivement son avantage concurrentiel","Une gestion prudente","Une future hausse du dividende"],b:0,e:"L'érosion durable des marges est l'un des signaux fondamentaux les plus sérieux : concurrence, coûts, perte de pouvoir de prix."},
+{q:"Pourquoi le bénéfice d'une seule année est-il peu fiable ?",o:["Les comptables se trompent souvent","Des éléments exceptionnels et des choix comptables peuvent le déformer","Il est secret"],b:1,e:"Cessions, provisions, dépréciations… Le bénéfice annuel se maquille légalement. La tendance longue, beaucoup moins."}]},
+
+{id:"l29",niveau:4,duree:8,badge:"💧",badgeNom:"Traqueur de cash",titre:"Les flux de trésorerie : l'argent qui ne ment pas",
+contenu:"<p><b>Le quoi.</b> Le tableau des flux de trésorerie suit le <b>cash réel</b> qui entre et sort : ce que l'activité génère, ce que l'entreprise investit, ce qu'elle emprunte ou rembourse. Sa star : le <b>free cash flow</b> (flux de trésorerie disponible) = cash généré par l'activité − investissements nécessaires. C'est l'argent vraiment libre, pour les dividendes, les rachats d'actions ou le désendettement.</p><p><b>Le pourquoi.</b> Le bénéfice est une opinion (comptable), le cash est un fait. Une entreprise peut afficher des bénéfices en trompe-l'œil pendant des années alors que sa caisse se vide — c'est le point commun de la plupart des grands scandales (Enron, Wirecard). À l'inverse, une entreprise au bénéfice modeste mais au cash-flow puissant est souvent une pépite discrète.</p><p><b>Le comment.</b> Deux vérifications d'or : 1) Le <b>cash suit-il le bénéfice</b> ? Sur 5 ans, le cash généré par l'activité doit être du même ordre que les bénéfices cumulés. S'il est très inférieur, quelque chose cloche (clients qui ne paient pas, stocks qui gonflent, comptabilité créative). 2) Le <b>free cash flow est-il positif et régulier</b> ? Une entreprise qui doit emprunter chaque année pour survivre n'est pas un investissement, c'est un pari.</p><p><b>Le risque.</b> Certaines entreprises jeunes brûlent légitimement du cash pour croître (on finance l'avenir). La question devient alors : combien de trimestres de survie reste-t-il en caisse, et le chemin vers la rentabilité est-il crédible ? Sans réponse claire, un débutant passe son chemin.</p>",
+exemple:"Sur 5 ans, PapierSA affiche 500 M€ de bénéfices cumulés… mais seulement 90 M€ de cash généré : ses « ventes » dorment en factures impayées et en stocks. CashCo affiche 400 M€ de bénéfices et 430 M€ de cash : chaque euro de profit existe vraiment. Deux ans plus tard, PapierSA lance un avertissement sur résultats ; CashCo augmente son dividende. Le cash avait prévenu.",
+quiz:[
+{q:"Pourquoi dit-on que « le bénéfice est une opinion, le cash un fait » ?",o:["Parce que les bénéfices sont toujours faux","Parce que la comptabilité laisse des marges d'interprétation, alors que la caisse ne ment pas","Parce que le cash est imposé"],b:1,e:"Provisions, amortissements, reconnaissance du chiffre d'affaires : le bénéfice se module. Les mouvements de trésorerie, très difficilement."},
+{q:"Qu'est-ce que le free cash flow ?",o:["Le cash de l'activité moins les investissements nécessaires","Le bénéfice net","La trésorerie totale en caisse"],b:0,e:"C'est l'argent vraiment disponible après avoir entretenu et développé l'outil de production — le carburant des dividendes."},
+{q:"Sur 5 ans, une entreprise cumule 500 M€ de bénéfices mais génère 90 M€ de cash. Réaction ?",o:["Superbe rentabilité","Signal d'alarme : les profits ne se transforment pas en argent réel","C'est parfaitement normal partout"],b:1,e:"Un écart durable bénéfice/cash est le drapeau rouge classique des comptabilités trop créatives — vérifié dans presque tous les grands scandales."}]},
+
+{id:"l30",niveau:4,duree:8,badge:"📐",badgeNom:"Maître des ratios",titre:"Les ratios de l'analyste : ROE, dette, et la boîte à outils",
+contenu:"<p><b>Le quoi.</b> Les ratios compriment les comptes en quelques chiffres comparables. Après le PER (leçon 16), voici la boîte à outils de base : le <b>ROE</b> (return on equity : bénéfice ÷ capitaux propres) — combien rapporte chaque euro confié par les actionnaires ; la <b>dette nette / EBITDA</b> — combien d'années de résultat brut il faudrait pour rembourser la dette ; la <b>marge nette</b> (leçon 28) ; et le <b>rendement du free cash flow</b> (FCF ÷ capitalisation) — le « loyer réel » que produit l'entreprise.</p><p><b>Le pourquoi.</b> Isolé, un chiffre n'est rien ; en ratio, il devient comparable entre entreprises de tailles différentes, et surtout traçable dans le temps. Un ROE durablement au-dessus de 15 % signe presque toujours un avantage concurrentiel réel ; une dette nette supérieure à 3× l'EBITDA met l'entreprise à la merci de ses créanciers.</p><p><b>Le comment.</b> La méthode : jamais un ratio seul, toujours un <b>tableau de bord</b> (ROE + marge + dette + FCF) ; jamais une année seule, toujours <b>5 à 10 ans</b> ; jamais dans l'absolu, toujours <b>face aux concurrents directs</b>. Piège classique : un ROE gonflé artificiellement par l'endettement (peu de capitaux propres → ratio flatteur) — d'où l'importance de croiser avec la dette.</p><p><b>Le risque.</b> La « ratio-manie » : empiler 30 indicateurs et perdre le fil. Quatre ratios bien compris, suivis sur dix ans, battent trente ratios survolés. Et aucun ratio ne dit si le PRIX de l'action est raisonnable — c'est l'objet de la prochaine leçon.</p>",
+exemple:"SolideCo : ROE 18 %, stable depuis 8 ans, dette nette/EBITDA 0,8, marge nette 16 % → machine de qualité. MirageCo : ROE 25 % (waouh !)… mais dette/EBITDA 4,5 : le ROE est dopé au levier — les capitaux propres sont squelettiques. En 2022, quand les taux montent, MirageCo divise son dividende ; SolideCo ne bronche pas.",
+quiz:[
+{q:"Que mesure le ROE ?",o:["Le rendement du dividende","Ce que rapporte chaque euro de capitaux propres confié par les actionnaires","La croissance des ventes"],b:1,e:"ROE = bénéfice ÷ capitaux propres. Durablement > 15 %, c'est souvent la signature d'un avantage concurrentiel."},
+{q:"Une dette nette de 4,5 fois l'EBITDA signifie…",o:["Une situation confortable","Qu'il faudrait 4,5 années de résultat brut pour rembourser : c'est lourd","Que l'entreprise n'a pas de dette"],b:1,e:"Au-delà de ~3×, l'entreprise devient l'otage de ses créanciers et des taux d'intérêt."},
+{q:"Un ROE spectaculaire peut être artificiellement gonflé par…",o:["L'endettement, qui réduit les capitaux propres au dénominateur","Les dividendes","La publicité"],b:0,e:"Beaucoup de dette + peu de capitaux propres = ROE flatteur mais fragile. On croise TOUJOURS le ROE avec l'endettement."}]},
+
+{id:"l31",niveau:4,duree:9,badge:"⚖️",badgeNom:"Estimateur",titre:"La valorisation : combien vaut vraiment cette entreprise ?",
+contenu:"<p><b>Le quoi.</b> Valoriser, c'est estimer ce que vaut une entreprise pour la comparer à son prix en bourse. L'idée profonde, formulée par Warren Buffett d'après son maître Graham : <b>le prix est ce que tu paies, la valeur est ce que tu obtiens</b> — et les deux divergent régulièrement.</p><p><b>Le pourquoi.</b> Une magnifique entreprise achetée trop cher est un mauvais placement (les acheteurs de superbes valeurs technologiques en 2000 ont attendu 15 ans pour s'en remettre). Une entreprise moyenne achetée très en dessous de sa valeur peut être excellente. Sans notion de valorisation, on n'investit pas : on espère.</p><p><b>Le comment.</b> Trois approches, de la plus simple à la plus fine : 1) <b>Les multiples historiques</b> : comparer le PER actuel de l'entreprise à sa propre moyenne sur 10 ans — coté à 30× quand sa norme est 18×, il faudra que tout aille parfaitement. 2) <b>Le rendement du free cash flow</b> : FCF ÷ capitalisation ; à 6-8 %, tu es payé correctement pour attendre ; à 2 %, tu paies très cher l'espoir de croissance. 3) <b>L'actualisation simplifiée (DCF)</b> : la valeur = la somme des cash-flows futurs « ramenés à aujourd'hui » (un euro dans 10 ans vaut moins qu'un euro maintenant). Inutile d'en faire le calcul complet : retiens sa LEÇON — plus les taux d'intérêt montent, plus les profits lointains perdent de valeur ; c'est le lien mécanique entre banques centrales et bourse (leçon 25).</p><p><b>Le risque.</b> La fausse précision. Un DCF donne « 87,32 € » avec trois décimales… bâties sur des hypothèses à ±30 %. La valorisation donne un ORDRE DE GRANDEUR et une marge de sécurité, jamais une cible exacte. Méfie-toi de quiconque affiche des objectifs de cours au centime.</p>",
+exemple:"GrandeMarque génère 5 € de FCF par action et cote 70 € → rendement FCF ≈ 7 % : tu es bien payé. Sa jumelle StarTech génère 2 € et cote 200 € → 1 % : tu paies 100 ans de cash-flow actuel, en pariant que tout triplera. Parfois le pari réussit — mais appelle-le par son nom : un pari, pas un placement de bon père de famille.",
+quiz:[
+{q:"« Le prix est ce que tu paies, la valeur est ce que tu obtiens » signifie…",o:["Prix et valeur sont toujours égaux","Le cours de bourse peut s'éloigner durablement de la valeur réelle","La valeur n'existe pas"],b:1,e:"C'est tout l'espace de l'investisseur : acheter quand le prix est nettement sous la valeur estimée."},
+{q:"Un rendement du free cash flow de 7 % veut dire…",o:["L'action montera de 7 % par an","L'entreprise génère chaque année 7 % de sa capitalisation en cash disponible","Le dividende est de 7 %"],b:1,e:"C'est le « loyer économique » réel de l'entreprise — comparable à un rendement locatif, sans promesse sur le cours."},
+{q:"Quelle est la grande leçon du DCF pour comprendre les marchés ?",o:["Il donne le prix exact d'une action","Quand les taux montent, les profits lointains valent moins aujourd'hui — les valeurs de croissance souffrent","Il ne sert à rien"],b:1,e:"L'actualisation relie mécaniquement taux d'intérêt et valorisations : le grand rouage macro→bourse."}]},
+
+{id:"l32",niveau:4,duree:8,badge:"📖",badgeNom:"Rat de rapport annuel",titre:"Lire un rapport annuel en 30 minutes (sans se noyer)",
+contenu:"<p><b>Le quoi.</b> Chaque société cotée publie un rapport annuel (en France : le « document d'enregistrement universel », souvent 300+ pages). Personne — pas même les professionnels — ne lit tout : l'art est de savoir <b>où aller</b>.</p><p><b>Le pourquoi.</b> C'est LA source primaire : tout le reste (articles, forums, vidéos) est du commentaire de seconde main, souvent orienté. Trente minutes dans le document officiel t'apprennent plus que dix heures de réseaux sociaux — et surtout, tu y trouves ce que les vendeurs d'histoires omettent : les risques, écrits noir sur blanc.</p><p><b>Le comment — le parcours en 5 arrêts (30 min chrono) :</b> 1) <b>Le message du dirigeant</b> (2 pages) : compare-le à celui d'il y a 3 ans — les promesses ont-elles été tenues ? 2) <b>Les facteurs de risque</b> : la section la plus honnête du document (obligation légale) ; repère les 3 premiers. 3) <b>Les chiffres clés sur 5 ans</b> : ventes, marges, dette, cash — tes leçons 27 à 30 en application. 4) <b>La répartition du chiffre d'affaires</b> par activité et par zone : d'où vient VRAIMENT l'argent ? (Beaucoup de « géants de l'IA » gagnent en réalité leur vie ailleurs.) 5) <b>La rémunération des dirigeants</b> : indexée sur quoi ? Le cours à 3 ans ou le bonus annuel ? Ça dit tout de leurs incitations.</p><p><b>Le risque.</b> Le vernis marketing des premières pages — photos léchées, mots-clés à la mode (« IA », « durable », « transformation »). Règle d'analyste : plus une entreprise communique sur un mot à la mode, plus il faut vérifier dans les chiffres que la réalité suit.</p>",
+exemple:"En 30 minutes dans le rapport de ModeGroupe : le PDG promettait en 2023 « le retour à 10 % de marge en 2025 » → la marge 2025 est à 6,1 % (promesse ratée, à retenir) ; risque n°1 listé : « dépendance à un fournisseur asiatique unique » (jamais mentionné dans les articles de presse !) ; 71 % des ventes viennent d'un seul pays. Trois découvertes qu'aucun influenceur ne t'aurait données.",
+quiz:[
+{q:"Quelle section du rapport annuel est la plus « honnête » ?",o:["La publicité des premières pages","Les facteurs de risque, une obligation légale","Le mot du président"],b:1,e:"L'entreprise est légalement tenue d'y lister ce qui pourrait mal tourner : une mine d'or que presque personne ne lit."},
+{q:"Pourquoi comparer le message du dirigeant à celui d'il y a 3 ans ?",o:["Pour vérifier son style d'écriture","Pour vérifier si les promesses passées ont été tenues","Pour compter les pages"],b:1,e:"Un management qui tient ses promesses chiffrées est rare et précieux ; un serial-prometteur se repère en 10 minutes d'archives."},
+{q:"Face à un rapport saturé de mots à la mode (« IA partout »), le réflexe d'analyste est…",o:["Acheter vite, c'est l'avenir","Vérifier dans les chiffres si la réalité suit le discours","Fuir systématiquement"],b:1,e:"Le mot à la mode n'est ni bon ni mauvais signe en soi : c'est l'écart entre le discours et les chiffres qui informe."}]},
+
+{id:"l33",niveau:4,duree:8,badge:"🔄",badgeNom:"Météorologue des cycles",titre:"Secteurs et cycles : pourquoi tout ne monte pas en même temps",
+contenu:"<p><b>Le quoi.</b> L'économie respire en cycles (expansion → surchauffe → ralentissement → reprise), et chaque secteur y réagit à sa manière. Les <b>cycliques</b> amplifient le mouvement : automobile, banques, construction, luxe, semi-conducteurs. Les <b>défensifs</b> l'amortissent : santé, alimentation, services aux collectivités — on se soigne et on mange même en récession.</p><p><b>Le pourquoi.</b> Comprendre cette mécanique éclaire les briefings : « les banques montent car les taux remontent », « le luxe souffre du ralentissement chinois »… Et elle explique un piège de valorisation redoutable : une cyclique paraît <b>la moins chère</b> (PER minuscule) exactement <b>en haut de cycle</b>, quand ses profits sont gonflés et sur le point de retomber. Le PER bas des cycliques au sommet est l'attrape-débutant classique.</p><p><b>Le comment.</b> 1) Classe chaque valeur de ta watchlist : cyclique ou défensive ? Ta réaction à ses variations changera du tout au tout. 2) Vérifie l'équilibre de ton portefeuille : 100 % cyclique = montagnes russes garanties. 3) Pour juger une cyclique, regarde ses profits <b>sur un cycle entier</b> (7-10 ans), jamais sur la meilleure année. 4) Rappel d'humilité : prévoir le PROCHAIN cycle est impossible — on se positionne pour traverser tous les temps, pas pour deviner la météo.</p><p><b>Le risque.</b> La rotation sectorielle érigée en stratégie (« je sors des cycliques avant la récession, j'y reviens avant la reprise ») : séduisante sur le papier, elle exige de prévoir deux retournements — les professionnels eux-mêmes s'y cassent les dents. Pour toi, c'est une grille de LECTURE, pas un mode d'emploi de trading.</p>",
+exemple:"2021, sortie de Covid : AutoPièces affiche un PER de 6 — « une affaire ! ». Sauf que ses profits sont au sommet historique du cycle (rattrapage de la demande). 2023 : la demande se normalise, les profits chutent de 60 %, et le PER remonte à 15 sur cours divisé par deux. Le PER de 6 était une illusion d'optique de haut de cycle — la santé, elle, au PER de 18 constant, a mieux protégé.",
+quiz:[
+{q:"Un secteur défensif est un secteur…",o:["De l'armement uniquement","Dont l'activité résiste aux récessions (santé, alimentation…)","Qui monte plus vite que les autres"],b:1,e:"On mange, on se soigne, on s'éclaire par tous les temps : ces secteurs amortissent les cycles."},
+{q:"Pourquoi une cyclique au PER très bas en haut de cycle est-elle un piège ?",o:["Ses profits gonflés vont retomber : l'action n'est pas si bon marché","Le PER bas est toujours un piège","Les cycliques ne font jamais de profits"],b:0,e:"PER = prix ÷ profits ; si les profits sont à un pic temporaire, le ratio flatte artificiellement. On juge une cyclique sur un cycle complet."},
+{q:"Que penser de la « rotation sectorielle » pour un particulier ?",o:["C'est la stratégie idéale","C'est une grille de lecture utile, mais pas une stratégie de trading : elle exige de prévoir les retournements","C'est illégal"],b:1,e:"Comprendre les rotations aide à lire les marchés ; les trader exige des prévisions que personne ne réussit durablement."}]},
+
+{id:"l34",niveau:4,duree:10,badge:"🎓",badgeNom:"Analyste diplômé",titre:"Ton étude de cas : analyser une entreprise de A à Z",
+contenu:"<p><b>Le quoi.</b> La leçon de synthèse du niveau 4 : assembler les sept leçons précédentes en une <b>méthode d'analyse complète</b>, applicable en 2 à 3 heures à n'importe quelle entreprise, et qui débouche sur une thèse écrite digne de ce nom.</p><p><b>La méthode MENTOR en 6 étapes.</b> 1) <b>Comprendre le métier</b> (30 min) : que vend-elle, à qui, qu'est-ce qui ferait fuir les clients ? Si tu ne peux pas l'expliquer à un enfant de 10 ans, passe ton chemin — règle de Peter Lynch. 2) <b>La solidité</b> (20 min) : bilan, dette nette, trésorerie (leçon 27). 3) <b>La qualité</b> (30 min) : marges et ROE sur 10 ans, cash qui suit le bénéfice (leçons 28-30). 4) <b>Les risques</b> (20 min) : la section dédiée du rapport annuel + une question à te poser toi-même : « qu'est-ce qui doit rester vrai pour que ça marche ? » (leçon 32). 5) <b>Le prix</b> (20 min) : PER vs sa moyenne 10 ans, rendement du FCF, position dans le cycle (leçons 31, 33). 6) <b>La thèse écrite</b> (20 min) : le format 5 points de la leçon 22 — idée, confirmation, invalidation, horizon, risque accepté.</p><p><b>Le comment (ton examen pratique).</b> Choisis une entreprise de ta watchlist et déroule les 6 étapes en notant tout au Journal. Puis demande son avis à ton professeur IA via le chat : il pointera ce que tu as manqué. C'est ce travail — pas la lecture — qui fait de toi un analyste.</p><p><b>Le risque.</b> L'excès de confiance du jeune diplômé : une belle analyse reste une opinion sur un avenir incertain. Même les meilleures thèses du monde se trompent souvent — d'où les positions modestes, la diversification (jamais plus de 20 % sur une ligne !), et l'ETF diversifié qui reste le cœur du portefeuille. L'analyse d'entreprises est un satellite passionnant, pas le réacteur principal.</p>",
+exemple:"Étude de cas condensée sur ChocoSuisse : métier compréhensible (chocolat premium, clients fidèles) ✓ ; dette/EBITDA 0,9 ✓ ; marge nette 14 % stable, ROE 17 %, cash = 95 % des bénéfices ✓ ; risques : prix du cacao (x2 depuis 2 ans !) et dépendance aux fêtes ; prix : PER 24 contre 19 de moyenne historique ✗ un peu cher. Thèse : « belle maison, prix exigeant — j'attends soit un repli de 15 %, soit deux trimestres confirmant que les hausses de prix passent ». C'est ça, une conclusion d'analyste : pas « achat » ou « fuite », mais des conditions.",
+quiz:[
+{q:"Quelle est la toute première étape d'une analyse d'entreprise ?",o:["Regarder le graphique du cours","Comprendre le métier au point de l'expliquer à un enfant","Calculer le PER"],b:1,e:"Si tu ne comprends pas comment l'entreprise gagne sa vie, aucun ratio ne te sauvera. C'est la règle n°1 de Peter Lynch."},
+{q:"Une analyse complète débouche sur…",o:["Un ordre d'achat immédiat","Une thèse écrite avec conditions de confirmation et d'invalidation","Un objectif de cours au centime près"],b:1,e:"La conclusion d'un analyste est une thèse conditionnelle, pas une injonction — et souvent la conclusion est « pas à ce prix »."},
+{q:"Quelle place pour les actions analysées en direct dans ton portefeuille ?",o:["100 % : l'analyse rend invincible","Un satellite limité, autour d'un cœur d'ETF diversifiés","0 % : l'analyse ne sert à rien"],b:1,e:"Même excellente, une thèse reste une opinion faillible. Le cœur diversifié assure ta trajectoire ; les convictions restent des satellites mesurés."}]}
+);
+/* ============================================================
+   NIVEAU 5 — LE PATRIMOINE COMPLET (leçons 35 à 42)
+   Au-delà de la bourse : construire l'ensemble de son patrimoine.
+   Se débloque après le niveau 4 + une première simulation d'époque.
+   ============================================================ */
+LECONS.push(
+{id:"l35",niveau:5,duree:8,badge:"🏠",badgeNom:"Propriétaire de papier",titre:"L'immobilier sans les clés : SCPI et foncières cotées",
+contenu:"<p><b>Le quoi.</b> Posséder de l'immobilier sans acheter d'appartement : deux véhicules. Les <b>SCPI</b> (« pierre-papier ») : tu achètes des parts d'une société qui détient des dizaines d'immeubles (bureaux, commerces, santé) et te reverse les loyers — non cotées, valorisées quelques fois par an. Les <b>foncières cotées</b> (REIT) : même idée, mais en bourse — liquides, achetables comme une action, et donc plus volatiles.</p><p><b>Le pourquoi.</b> L'immobilier a sa propre respiration : des loyers réguliers, une protection partielle contre l'inflation (les baux sont souvent indexés), et une décorrélation PARTIELLE des actions. Dans une allocation, il joue le rôle de deuxième pilier de rendement — mais attention à l'exposition cachée : si tu possèdes déjà ta résidence principale, ton patrimoine est peut-être DÉJÀ à 70 % immobilier.</p><p><b>Le comment.</b> SCPI : viser des frais d'entrée raisonnables (ils ont longtemps été de 8-10 % ! des SCPI sans frais d'entrée existent désormais), un taux d'occupation > 90 %, une diversification sectorielle, et comprendre que la liquidité n'est PAS garantie (revendre peut prendre des mois — la crise des SCPI de bureaux de 2023-2024 l'a rappelé durement). Foncières cotées : liquides mais elles se comportent en bourse comme des actions sensibles aux taux — quand les taux montent, elles chutent. Fiscalité : les loyers de SCPI en direct sont imposés comme des revenus fonciers (souvent lourd) ; via l'assurance-vie, c'est généralement plus doux.</p><p><b>Le risque.</b> Le mirage du rendement affiché : « 6 % ! » — avant frais d'entrée, avant fiscalité, avant baisse éventuelle du prix de la part. Les détenteurs de SCPI de bureaux l'ont appris en 2023 : le rendement continuait de tomber pendant que la valeur des parts baissait de 10 à 17 %. Rendement n'est pas rendement TOTAL.</p>",
+exemple:"Tu investis 10 000 € dans une SCPI à 8 % de frais d'entrée servant 5,5 % : tu pars avec 9 200 € de valeur réelle, et il te faut presque 2 ans de loyers juste pour rembourser les frais. La même somme dans une SCPI sans frais d'entrée à 5 % te laisse gagnant dès la première année. Le rendement affiché faisait pourtant préférer la première…",
+quiz:[
+{q:"Quelle différence majeure entre SCPI et foncière cotée ?",o:["La SCPI n'est pas cotée (liquidité lente), la foncière s'échange en bourse (liquide mais volatile)","Aucune","La foncière ne verse jamais de loyers"],b:0,e:"Même métier (percevoir des loyers), deux enveloppes : l'une lente et lissée, l'autre instantanée et chahutée."},
+{q:"Pourquoi vérifier son exposition immobilière TOTALE avant d'acheter des SCPI ?",o:["Pour le plaisir","Parce que la résidence principale fait déjà de beaucoup de Français des patrimoines à dominante immobilière","C'est une obligation légale"],b:1,e:"Diversifier, c'est raisonner sur TOUT le patrimoine : ajouter de la pierre-papier à un patrimoine déjà tout en pierre concentre au lieu de diversifier."},
+{q:"Un rendement SCPI affiché à 6 % signifie…",o:["Que tu gagneras 6 % net, garanti","Un chiffre avant frais, fiscalité et variation du prix de la part","Que la part montera de 6 %"],b:1,e:"2023-2024 l'a rappelé : des SCPI servaient leur rendement pendant que la valeur des parts chutait de plus de 10 %."}]},
+
+{id:"l36",niveau:5,duree:8,badge:"🧾",badgeNom:"Obligataire pratique",titre:"Les obligations en pratique : fonds euros, ETF et fonds datés",
+contenu:"<p><b>Le quoi.</b> La leçon 3 a expliqué la théorie ; voici comment on détient VRAIMENT des obligations en France. Quatre véhicules : le <b>fonds euros</b> d'assurance-vie (un portefeuille obligataire géré, avec capital garanti par l'assureur — la solution par défaut) ; les <b>ETF obligataires</b> (paniers cotés d'obligations d'États ou d'entreprises) ; les <b>fonds datés</b> (on achète un panier d'obligations toutes remboursées vers une même année, ex. 2029 — visibilité du rendement si on tient jusqu'au bout) ; et le bon vieux <b>compte à terme</b> pour les horizons courts.</p><p><b>Le pourquoi.</b> Depuis la remontée des taux de 2022-2023, l'obligataire redevient un vrai outil : les fonds euros servent à nouveau 2,5 à 3,5 %+, les obligations d'entreprises solides offrent 3 à 5 %. C'est l'amortisseur du patrimoine — la poche qui permet de dormir ET de renforcer les actions quand elles soldent.</p><p><b>Le comment (par horizon).</b> Argent utile dans moins de 3 ans : livrets, comptes à terme, fonds euros — point final. Poche de stabilité de long terme : fonds euros (simplicité, garantie) en premier choix ; ETF obligataires pour les comptes-titres, en sachant qu'ils BOUGENT (un ETF d'obligations longues a perdu ~15 à 30 % en 2022 quand les taux ont bondi — « sans risque » ne s'applique qu'à l'échéance, pas au parcours). Fonds datés : intéressants quand les taux sont hauts, à condition de tenir jusqu'à l'échéance et de surveiller les frais.</p><p><b>Le risque.</b> Confondre « obligataire » et « immobile ». La valeur d'une obligation en cours de route fluctue à l'inverse des taux (leçon 3) — 2022 fut la pire année obligataire moderne. La garantie du fonds euros, elle, est réelle mais repose sur la solidité de l'assureur, et sa performance peut être rognée par les frais du contrat : regarde toujours le rendement NET des frais de gestion.</p>",
+exemple:"100 000 € à sécuriser pour dans 4 ans. Option A, fonds euros à 3 % net : ≈ 112 500 € dans 4 ans, trajet sans secousse. Option B, ETF obligations longues : rendement espéré similaire, MAIS si les taux remontent de 2 points l'an prochain, le parcours passe par −15 % — supportable seulement si tu n'as pas besoin de vendre. Même famille d'actifs, deux expériences opposées.",
+quiz:[
+{q:"Quel est le véhicule obligataire « par défaut » du particulier français ?",o:["Les options sur obligations","Le fonds euros de l'assurance-vie","Le CFD obligataire"],b:1,e:"Capital garanti par l'assureur, gestion professionnelle, disponibilité : c'est la poche de stabilité de référence — à condition de surveiller les frais du contrat."},
+{q:"Pourquoi un ETF obligataire peut-il perdre 15 % alors que les obligations « remboursent à 100 » ?",o:["C'est impossible","Parce qu'en cours de route, les prix obligataires baissent quand les taux montent","À cause des dividendes"],b:1,e:"2022 l'a montré brutalement. La stabilité obligataire n'existe qu'à l'échéance — un fonds perpétuel n'a pas d'échéance."},
+{q:"Un fonds daté « échéance 2029 » est surtout pertinent si…",o:["Tu comptes le revendre dans 6 mois","Tu peux le conserver jusqu'à l'échéance","Les taux sont à zéro"],b:1,e:"Sa promesse de rendement ne vaut qu'au bout du chemin ; en sortir avant t'expose aux fluctuations de taux comme n'importe quel fonds."}]},
+
+{id:"l37",niveau:5,duree:7,badge:"🥇",badgeNom:"Gardien du coffre",titre:"L'or et les matières premières : assurance, pas placement",
+contenu:"<p><b>Le quoi.</b> L'or ne produit RIEN : ni loyer, ni dividende, ni intérêt. Sa valeur repose sur 5 000 ans de confiance collective et sa rareté. C'est précisément ce qui en fait un actif à part : il ne dépend d'aucune promesse d'entreprise ou d'État. Les autres matières premières (pétrole, cuivre, blé…) sont encore autre chose : des paris industriels très volatils, à laisser aux professionnels.</p><p><b>Le pourquoi.</b> L'or joue le rôle d'<b>assurance de portefeuille</b> : il monte souvent quand tout va mal (crises, guerres, peur de l'inflation ou des monnaies) — 2008, 2020 et 2022-2025 l'ont illustré. Mais sur très longue période, il rapporte nettement moins que les actions : c'est le prix de l'assurance. On ne s'enrichit pas avec son extincteur ; on est content de l'avoir le jour de l'incendie.</p><p><b>Le comment.</b> Dose : 0 à 10 % du patrimoine — au-delà, l'assurance dévore le rendement. Véhicules : l'<b>ETC or physique</b> (fonds coté adossé à des lingots en coffre, frais ~0,15-0,4 %/an) est la voie simple ; les pièces/lingots physiques ont un charme réel mais des frais d'achat-revente de plusieurs % et un problème de stockage ; les actions de mines d'or ne sont PAS de l'or (ce sont des entreprises, avec un levier violent sur le métal). Fiscalité française du physique : taxe forfaitaire de 11,5 % à la revente, ou régime des plus-values avec abattement par année de détention (exonération au bout de 22 ans) — l'ETC en compte-titres suit lui la flat tax classique.</p><p><b>Le risque.</b> Le chant des sirènes apocalyptiques : des vendeurs entiers vivent de la peur (« tout va s'effondrer, achetez de l'or ! »). L'or peut aussi stagner des DÉCENNIES (1980-2000 : −70 % en termes réels). Assurance, dose modérée, zéro fascination.</p>",
+exemple:"Portefeuille A, 100 % actions monde : −34 % au pire de mars 2020. Portefeuille B, 90 % actions + 10 % or : −29 % au même moment, l'or ayant bondi — et surtout son détenteur a mieux dormi et n'a pas vendu. Sur les 30 années précédentes en revanche, A a fini plus haut que B : l'assurance a un coût. Les deux choix se défendent ; l'important est de le faire en connaissance de cause.",
+quiz:[
+{q:"Pourquoi dit-on que l'or est une assurance plutôt qu'un placement ?",o:["Il ne produit rien mais protège dans les tempêtes","Il monte tous les ans","Il est garanti par l'État"],b:0,e:"Pas de cash-flow = pas de moteur de rendement propre. Sa valeur est une protection collective contre les crises de confiance."},
+{q:"Quelle dose d'or est raisonnable dans un patrimoine ?",o:["0 à 10 %","50 %","100 % en cas de crise annoncée"],b:0,e:"Assez pour amortir les chocs, pas au point d'étouffer le rendement de long terme. Et personne ne sait « annoncer » les crises."},
+{q:"Une action de mine d'or, c'est…",o:["Équivalent à détenir de l'or","Une entreprise, avec ses coûts et ses risques, amplifiant les mouvements du métal","Sans aucun rapport avec l'or"],b:1,e:"Les minières font ×2 quand l'or monte de 30 %… et −60 % quand il recule de 20 %. C'est un levier industriel, pas un coffre."}]},
+
+{id:"l38",niveau:5,duree:9,badge:"📜",badgeNom:"Stratège de l'enveloppe",titre:"L'assurance-vie en grand : le couteau suisse du patrimoine français",
+contenu:"<p><b>Le quoi.</b> Troisième pilier des enveloppes françaises (avec PEA et CTO, leçon 9), l'assurance-vie mérite sa leçon complète : c'est un CONTRAT (pas un compte) combinant un <b>fonds euros</b> garanti et des <b>unités de compte</b> (ETF, fonds, SCPI, actions…), avec une fiscalité qui s'adoucit avec l'âge du contrat et un statut successoral unique.</p><p><b>Le pourquoi — les 3 super-pouvoirs.</b> 1) <b>Fiscalité après 8 ans</b> : un abattement annuel de 4 600 € de gains retirés (9 200 € pour un couple) — bien utilisé, tu peux retirer chaque année sans payer d'impôt sur le revenu (restent les 17,2 % de prélèvements sociaux). 2) <b>La transmission</b> : jusqu'à 152 500 € transmis PAR bénéficiaire hors succession (pour les versements avant 70 ans) — aucun autre outil ne fait ça. 3) <b>La souplesse</b> : arbitrages internes entre fonds euros et unités de compte sans déclencher d'impôt, retraits partiels libres, avances possibles.</p><p><b>Le comment.</b> La règle qui change tout : <b>ouvrir tôt pour prendre date</b> — l'horloge des 8 ans court dès l'ouverture, même avec 100 €. Choisir un contrat EN LIGNE à frais réduits : 0 % sur versements, ≤ 0,6 %/an de frais de gestion, ETF disponibles — les contrats bancaires classiques prélèvent souvent 3 % à l'entrée + 1 %/an + des unités de compte chargées : de quoi manger un tiers du résultat final (leçon 8 !). Architecture type : fonds euros pour la poche stable + ETF monde en unités de compte pour la poche dynamique.</p><p><b>Le risque.</b> Les unités de compte ne sont PAS garanties (le capital fluctue comme leurs sous-jacents), et le démarchage bancaire pousse souvent vers les fonds « maison » chargés en frais plutôt que vers les ETF. L'assurance-vie est un excellent OUTIL ; comme tout outil, son résultat dépend de ce qu'on met dedans.</p>",
+exemple:"Louise, 30 ans, ouvre une assurance-vie en ligne avec 500 € « pour prendre date ». À 45 ans, son contrat vaut 80 000 € dont 30 000 € de gains. Elle retire 9 000 €/an pour compléter ses revenus : la part de gains dans chaque retrait reste sous l'abattement de 4 600 € → 0 € d'impôt sur le revenu, seulement les prélèvements sociaux sur la part de gains. Son frère, qui a tout en CTO, paie 12,8 % d'impôt sur les mêmes gains retirés. Prendre date à 30 ans a créé cet écart.",
+quiz:[
+{q:"Que signifie « prendre date » en assurance-vie ?",o:["Fixer un rendez-vous avec son banquier","Ouvrir le contrat tôt, même avec peu, pour faire courir l'horloge fiscale des 8 ans","Choisir la date des retraits"],b:1,e:"L'abattement annuel après 8 ans se calcule depuis l'OUVERTURE : 100 € investis aujourd'hui ouvrent des droits pour toute la vie du contrat."},
+{q:"Quel est l'avantage successoral de l'assurance-vie ?",o:["Aucun","Jusqu'à 152 500 € par bénéficiaire transmis hors succession (versements avant 70 ans)","Elle supprime tous les impôts"],b:1,e:"C'est l'outil de transmission le plus puissant du droit français — unique en son genre."},
+{q:"Entre un contrat bancaire classique (3 % d'entrée, 1 %/an) et un contrat en ligne (0 %, 0,5 %/an), l'écart à 25 ans…",o:["Est négligeable","Peut représenter un tiers du capital final","Favorise le contrat bancaire"],b:1,e:"Les frais composent contre toi (leçon 8). À rendement identique, le contrat chargé ampute massivement le résultat."}]},
+
+{id:"l39",niveau:5,duree:8,badge:"🎯",badgeNom:"Architecte retraite",titre:"Le PER : préparer sa retraite avec un bonus fiscal immédiat",
+contenu:"<p><b>Le quoi.</b> Le Plan d'Épargne Retraite (PER) est l'enveloppe dédiée retraite : tu verses, tu <b>déduis les versements de ton revenu imposable</b> (dans certaines limites), l'argent fructifie (fonds euros + unités de compte, comme une assurance-vie), et il est <b>bloqué jusqu'à la retraite</b> — sauf accidents de la vie et achat de la résidence principale.</p><p><b>Le pourquoi.</b> Le bonus fiscal est immédiat et proportionnel à ta tranche d'imposition : dans la tranche à 30 %, verser 1 000 € ne te « coûte » que 700 € (300 € d'impôt en moins l'année même). C'est un rendement fiscal instantané que rien d'autre n'offre. MAIS — et c'est le cœur de la leçon — l'avantage n'est qu'un <b>report</b> : à la sortie, le capital issu des versements déduits est imposé au barème. Le pari gagnant : être moins imposé à la retraite qu'aujourd'hui (cas de la majorité des gens).</p><p><b>Le comment — à qui le PER convient-il ?</b> Très pertinent si : tranche à 30 % ou plus, horizon retraite assumé, et épargne de précaution + PEA/assurance-vie déjà en place. Peu pertinent si : tranche à 11 % ou non imposable (le bonus est faible et tu bloques ton argent), ou si tu pourrais avoir besoin des fonds avant. La hiérarchie MENTOR des enveloppes : 1) épargne de précaution, 2) PEA (souplesse + fiscalité), 3) assurance-vie (souplesse + transmission), 4) PER (uniquement pour l'excédent long terme des contribuables bien imposés). Même exigence que partout : un PER en ligne à frais réduits, garni d'ETF.</p><p><b>Le risque.</b> Le blocage, psychologiquement sous-estimé : la vie change (projet, coup dur non prévu par les cas de déblocage) et l'argent est derrière une vitre. Et le démarchage : le PER est très vendu en agence PARCE qU'il est rentable… pour le vendeur. Frais d'abord, fiscalité ensuite.</p>",
+exemple:"Nadia, tranche à 30 %, verse 3 000 €/an sur un PER en ligne : 900 €/an d'impôt en moins, pendant 20 ans. À la retraite, sa tranche tombe à 11 % : elle récupère son capital en rentes et retraits imposés bien plus doucement qu'ils n'ont été déduits. Gain fiscal net sur la vie du contrat : plusieurs milliers d'euros. Son collègue non imposable qui a signé le même PER « parce que le conseiller insistait » n'a RIEN déduit — et son argent est bloqué 25 ans.",
+quiz:[
+{q:"Quel est l'avantage immédiat du PER ?",o:["Les gains ne sont jamais imposés","Les versements se déduisent du revenu imposable","Le capital est disponible à tout moment"],b:1,e:"Dans la tranche à 30 %, 1 000 € versés = 300 € d'impôt en moins tout de suite. C'est un report d'imposition, pas un cadeau définitif."},
+{q:"Pour qui le PER est-il le PLUS pertinent ?",o:["Les non-imposables","Les contribuables en tranche 30 %+ avec un horizon retraite assumé","Tout le monde, toujours"],b:1,e:"Le bonus est proportionnel à la tranche, et le pari repose sur une imposition plus douce à la retraite."},
+{q:"Quelle est la bonne place du PER dans la hiérarchie des enveloppes ?",o:["En premier, avant tout","Après l'épargne de précaution, le PEA et l'assurance-vie","À la place du livret A"],b:1,e:"Son défaut majeur est le blocage : on n'y met que l'excédent vraiment long terme, une fois les enveloppes souples remplies."}]},
+
+{id:"l40",niveau:5,duree:8,badge:"🧮",badgeNom:"Optimiseur fiscal",titre:"La fiscalité fine : faire travailler les enveloppes ensemble",
+contenu:"<p><b>Le quoi.</b> Tu connais chaque enveloppe (PEA, CTO, assurance-vie, PER) ; l'étage supérieur consiste à les faire jouer <b>ensemble</b> : où loger quoi, dans quel ordre verser, dans quel ordre retirer, et comment utiliser les règles à ton avantage — en toute légalité, ce sont des dispositifs voulus par le législateur.</p><p><b>Le pourquoi.</b> À placements identiques, deux épargnants peuvent avoir des résultats nets d'impôts différant de 15 à 25 % sur une vie, juste par l'ordre et le choix des enveloppes. C'est le dernier « rendement gratuit » après les frais (leçon 8).</p><p><b>Le comment — les 5 règles d'or.</b> 1) <b>Ordre de remplissage</b> : précaution → PEA (jusqu'au plafond, pour les actions) → assurance-vie (souplesse, transmission) → PER (si tranche 30 %+) → CTO (le reste, actions monde hors PEA). 2) <b>Localisation des actifs</b> : les actifs qui distribuent beaucoup (foncières, fonds à dividendes) plutôt en assurance-vie ou PEA ; les ETF capitalisants supportent très bien le CTO (pas d'imposition tant qu'on ne vend pas). 3) <b>Compensation des moins-values</b> (CTO) : les pertes réalisées s'imputent sur les gains réalisés de l'année et des 10 suivantes — vendre une position en perte peut « effacer » l'impôt d'une vente en gain. 4) <b>Ordre des retraits</b> à long terme : d'abord les abattements gratuits (assurance-vie 8 ans+ : 4 600 €/an), puis PEA (17,2 % seulement), le CTO en dernier. 5) <b>Chaque année</b> : vérifier le pré-rempli (leçon 24), déclarer le 3916-bis (eToro), et noter que l'option « barème » peut battre la flat tax pour les faibles revenus.</p><p><b>Le risque.</b> La sur-optimisation : monter des usines à gaz fiscales qui dictent les choix d'investissement (« je garde cette mauvaise position pour l'impôt »). La fiscalité OPTIMISE une bonne stratégie ; elle ne doit jamais la COMMANDER. Et pour les situations vraiment complexes (expatriation, succession importante, société) : un professionnel, toujours.</p>",
+exemple:"Année de ménage chez Karim (CTO) : il vend une position gagnante (+3 000 € de plus-value) et solde le même mois une vieille ligne perdante (−2 800 €). Plus-value nette imposable : 200 € → impôt : 60 € au lieu de 900 €. La ligne perdante « inutile » a servi une dernière fois. C'est légal, prévu par la loi, et ça s'appelle simplement… compenser.",
+quiz:[
+{q:"Quel est l'ordre de remplissage recommandé des enveloppes ?",o:["PER d'abord, toujours","Précaution → PEA → assurance-vie → PER (si bien imposé) → CTO","CTO d'abord pour la liberté"],b:1,e:"Des plus protectrices/souples vers les plus contraignantes : chaque euro se loge là où il travaille net le mieux."},
+{q:"À quoi servent les moins-values réalisées sur un CTO ?",o:["À rien","À s'imputer sur les plus-values de l'année et des 10 suivantes","À réduire la taxe foncière"],b:1,e:"La compensation des pertes est l'outil fiscal le plus sous-utilisé des particuliers."},
+{q:"Quelle est la limite de l'optimisation fiscale ?",o:["Elle ne doit jamais commander la stratégie d'investissement","Il n'y en a pas","Elle est réservée aux riches"],b:0,e:"Garder un mauvais placement « pour l'impôt » revient à perdre 100 pour économiser 30. L'impôt optimise, la stratégie décide."}]},
+
+{id:"l41",niveau:5,duree:9,badge:"🏛️",badgeNom:"Grand architecte",titre:"L'allocation totale : assembler TOUT ton patrimoine",
+contenu:"<p><b>Le quoi.</b> La leçon d'architecture générale : ne plus penser « mon PEA » ou « mes SCPI » séparément, mais UN patrimoine total — résidence principale comprise — réparti entre quatre grandes briques : <b>sécurité</b> (livrets, fonds euros), <b>rendement régulier</b> (obligations, immobilier), <b>croissance</b> (actions monde), <b>assurance</b> (or, 0-10 %).</p><p><b>Le pourquoi.</b> C'est l'allocation totale — pas la sélection de titres — qui détermine l'essentiel de ta performance ET de tes émotions. Beaucoup de gens croient être prudents (« je n'ai que 5 000 € en actions ! ») alors que 90 % de leur patrimoine dort en immobilier concentré sur UNE ville ; d'autres se croient audacieux avec 80 % de leur épargne en fonds euros. On ne pilote bien que ce qu'on voit en entier.</p><p><b>Le comment — la méthode en 4 étapes.</b> 1) <b>L'inventaire total</b> (l'exercice qui change la vision) : tout lister — résidence (valeur − crédit restant), livrets, contrats, comptes, même la voiture de collection. 2) <b>La photo en 4 briques</b> : calcule tes pourcentages réels. Surprise garantie. 3) <b>La cible selon ton âge et ton horizon</b> — repère classique à adapter : la part d'actions ≈ « 110 − ton âge » en % de ton patrimoine FINANCIER (hors résidence), modulée par ta tolérance mesurée. 4) <b>Le chemin</b> : on ne bascule jamais brutalement ; on dirige les flux d'épargne nouveaux vers les briques maigres (rebalancement par les flux, leçon 23), sur 12 à 36 mois.</p><p><b>Le risque.</b> Les deux extrêmes : l'inventaire jamais fait (on pilote à l'aveugle) et le tableau Excel obsessionnel recalculé chaque dimanche (le patrimoine n'est pas un tamagotchi). Un inventaire complet par an — par exemple à ton anniversaire — suffit amplement.</p>",
+exemple:"Inventaire de Sophie, 35 ans, « très prudente » selon elle : appartement 280 000 € (crédit restant : 160 000 €) → 120 000 € nets ; livret A 15 000 € ; assurance-vie fonds euros 30 000 € ; PEA 12 000 €. Patrimoine : 177 000 €, dont… 68 % immobilier mono-ville, 25 % sécurité, 7 % actions. Sa « prudence » est en réalité une énorme concentration immobilière. Son plan : diriger 100 % de son épargne nouvelle vers le PEA pendant 3 ans — sans rien vendre.",
+quiz:[
+{q:"Qu'est-ce que l'allocation d'actifs TOTALE ?",o:["La répartition de son PEA","La répartition de tout le patrimoine, résidence principale comprise, en grandes briques","La liste de ses actions"],b:1,e:"On ne juge la prudence ou l'audace d'un patrimoine qu'en le regardant en entier — la résidence principale pèse souvent plus que tout le reste."},
+{q:"Que révèle le plus souvent le premier inventaire complet ?",o:["Une répartition parfaitement équilibrée","Une concentration insoupçonnée (souvent immobilière) très éloignée de l'image qu'on s'en faisait","Qu'il manque de l'argent"],b:1,e:"« Je suis prudent » et « 70 % de mon patrimoine dans un seul appartement » cohabitent très souvent — jusqu'à l'inventaire."},
+{q:"Comment corriger une allocation déséquilibrée ?",o:["Tout vendre et racheter d'un coup","Diriger l'épargne nouvelle vers les briques maigres, sur 1 à 3 ans","Ne rien faire"],b:1,e:"Le rebalancement par les flux évite impôts, frais et erreurs de timing : la correction douce est presque toujours la bonne."}]},
+
+{id:"l42",niveau:5,duree:9,badge:"🌅",badgeNom:"Rentier en projet",titre:"Vivre de son patrimoine : la règle des 4 % et ses nuances",
+contenu:"<p><b>Le quoi.</b> La question ultime de l'épargnant : « combien me faut-il pour que mon patrimoine finance ma vie ? » La réponse la plus célèbre est la <b>règle des 4 %</b> (étude Trinity, États-Unis) : historiquement, retirer chaque année 4 % de son portefeuille initial (ajusté de l'inflation ensuite) a permis à un portefeuille diversifié actions/obligations de survivre au moins 30 ans dans la grande majorité des scénarios passés. Renversée, la règle donne le chiffre magique : <b>capital cible ≈ 25 × tes dépenses annuelles</b>.</p><p><b>Le pourquoi.</b> Même si la retraite est loin, ce calcul transforme l'épargne abstraite en objectif concret : « il me faut 20 000 €/an → 500 000 € de patrimoine financier ». Chaque versement mensuel devient un pas mesurable vers un chiffre qui a du sens — la motivation des mois où la bourse déprime.</p><p><b>Le comment — les nuances qui comptent.</b> 1) La règle vient de données AMÉRICAINES passées ; les études européennes et récentes suggèrent plutôt <b>3 à 3,5 %</b> pour être robuste — soit un capital de 28 à 33 × les dépenses. 2) Le pire ennemi du rentier : le <b>risque de séquence</b> — un krach dans les toutes premières années de retraits fait bien plus de dégâts qu'un krach tardif (on vend beaucoup de parts au pire prix). Parades : une poche de 2-3 ans de dépenses en sécurité, et de la flexibilité (réduire les retraits les années rouges). 3) En France, penser NET : impôts et prélèvements sociaux se prélèvent sur les retraits (d'où l'intérêt de l'ordre de retrait de la leçon 40), et la retraite par répartition couvre déjà une partie des besoins — le patrimoine complète, il ne remplace pas forcément tout.</p><p><b>Le risque.</b> Prendre la règle pour une garantie : c'est une BOUSSOLE statistique tirée du passé, pas un contrat. L'avenir peut faire pire que l'histoire. La vraie sécurité vient du triptyque : taux de retrait prudent + flexibilité + années de coussin. Et rappel MENTOR : pour un projet de retraite précis, un professionnel agréé vaut mieux qu'une règle de pouce.</p>",
+exemple:"Rêve de Malik : 1 500 €/mois de complément, soit 18 000 €/an. Règle des 4 % : 18 000 × 25 = 450 000 €. Version prudente à 3,3 % : ≈ 545 000 €. Avec 400 €/mois investis à 6 %/an, il atteint 450 000 € en ≈ 28 ans — 545 000 € en ≈ 31 ans. Trois ans d'écart pour la version robuste : c'est le prix de la sérénité, et Malik trouve qu'il vaut la peine d'être payé.",
+quiz:[
+{q:"Que dit la règle des 4 % ?",o:["La bourse rapporte 4 % par an, garanti","Historiquement, retirer 4 %/an d'un portefeuille diversifié a tenu 30 ans dans la plupart des scénarios passés","Il faut 4 % d'or en portefeuille"],b:1,e:"C'est une observation statistique du passé (étude Trinity) — une boussole précieuse, pas une promesse."},
+{q:"Qu'est-ce que le risque de séquence ?",o:["Le risque d'oublier ses mots de passe","Un krach dans les premières années de retraits, qui force à vendre beaucoup de parts au pire prix","Une erreur de calcul"],b:1,e:"Le MÊME rendement moyen sur 30 ans donne des résultats opposés selon que le krach arrive en année 2 ou en année 25. D'où la poche de sécurité de 2-3 ans."},
+{q:"Combien viser pour 20 000 € de retraits annuels, version prudente (3,3 %) ?",o:["100 000 €","Environ 600 000 €","5 millions"],b:1,e:"20 000 ÷ 3,3 % ≈ 606 000 € (soit ~30 fois les dépenses). La version 4 % dirait 500 000 € — l'écart est le coussin de robustesse."}]}
+);
+/* ============================================================
+   NIVEAU 6 — L'ÉCOLE DU SANG-FROID (leçons 43 à 50)
+   Le savoir ne suffit pas : on forge ici le comportement.
+   Ces leçons accompagnent le Simulateur d'époques et les défis.
+   ============================================================ */
+LECONS.push(
+{id:"l43",niveau:6,duree:9,badge:"🕳️",badgeNom:"Survivant de 1929",titre:"1929 et la décennie perdue : le krach fondateur, vécu de l'intérieur",
+contenu:"<p><b>Le récit.</b> New York, été 1929 : l'Amérique s'enrichit en bourse depuis 8 ans, les chauffeurs de taxi donnent des tuyaux, on emprunte massivement pour acheter des actions (le levier de l'époque : 10 % de couverture !). Le 24 octobre — jeudi noir — la machine s'enraye. En trois ans, le Dow Jones perd <b>89 %</b>. Il ne retrouvera son sommet de 1929 qu'en… <b>1954</b>, 25 ans plus tard.</p><p><b>Les leçons intemporelles.</b> 1) <b>Le levier tue</b> : les ruinés de 1929 ne sont pas ceux qui détenaient des actions, mais ceux qui les détenaient À CRÉDIT — les appels de marge forçaient à vendre au pire moment, en cascade (relis la leçon 18 : rien n'a changé, seuls les habits du levier ont changé). 2) <b>Les « 25 ans pour s'en remettre » sont trompeurs</b> : ce chiffre ignore les dividendes (réinvestis, le retour à l'équilibre a pris ~15 ans), la déflation (les prix baissaient : chaque dollar valait plus), et surtout le DCA — celui qui a continué d'acheter dans les années 30 a fait une affaire historique. 3) <b>L'euphorie AVANT le krach était le signal</b> : « tout le monde » en bourse, à crédit, avec certitude. Retiens la formule : ce n'est pas le krach qui ruine, c'est ce qu'on a fait pendant l'euphorie qui précède.</p><p><b>Et toi ?</b> Ce scénario existe dans le Simulateur d'époques version moderne (2000 et 2008). Avant de le lancer, cette question : si ton portefeuille perdait 80 % et mettait 15 ans à revenir, ton plan actuel (montants, horizon, absence de levier) te permettrait-il de tenir sans vendre ? Si la réponse est non, ce n'est pas ton courage qu'il faut changer — c'est ton plan.</p>",
+exemple:"1 000 $ investis au pire sommet de 1929 : ≈ 110 $ trois ans plus tard — mais réinvestis en dividendes, de nouveau ≈ 1 000 $ vers 1944, et ≈ 4 400 $ en 1954. Et 1 000 $ investis PAR AN de 1929 à 1939 (le DCA du courageux) : un des meilleurs points d'entrée du siècle. La différence entre la ruine et la fortune de 1929 tient en deux mots : levier, et régularité.",
+quiz:[
+{q:"Qui a été ruiné en 1929 ?",o:["Tous les détenteurs d'actions, à jamais","Surtout ceux qui détenaient des actions à crédit, liquidés de force","Personne"],b:1,e:"Les appels de marge sur les comptes à levier ont transformé une baisse en anéantissement. Sans levier, on pouvait attendre — et les dividendes travaillaient."},
+{q:"Pourquoi « 25 ans pour retrouver le sommet » exagère-t-il la réalité vécue ?",o:["Le chiffre est faux","Il ignore dividendes réinvestis, déflation et achats réguliers pendant la baisse","La bourse a fermé pendant 25 ans"],b:1,e:"Dividendes réinvestis : ~15 ans. Avec un DCA poursuivi dans les années 30 : une affaire historique. L'indice nu raconte la version la plus noire."},
+{q:"Quel était le vrai signal d'alarme en 1929 ?",o:["Le jeudi noir lui-même","L'euphorie généralisée et l'achat massif à crédit qui ont précédé","Un article de journal"],b:1,e:"Les krachs ne s'annoncent pas, mais les euphories se reconnaissent : certitude collective + levier = poudrière. C'est AVANT que tout se joue."}]},
+
+{id:"l44",niveau:6,duree:8,badge:"🔮",badgeNom:"Anti-Nostradamus",titre:"Le biais rétrospectif : pourquoi tout semble « évident » après coup",
+contenu:"<p><b>Le quoi.</b> Le biais rétrospectif (hindsight bias) : une fois qu'un événement s'est produit, notre cerveau réécrit le passé pour le rendre « prévisible ». « La bulle internet, c'était ÉVIDENT » ; « les subprimes, tout le monde savait ». Faux : en 1999 et 2007, l'immense majorité — professionnels inclus — ne voyait rien, ou voyait autre chose.</p><p><b>Le pourquoi c'est dangereux.</b> Trois dégâts : 1) Il fabrique une <b>fausse confiance</b> (« puisque c'était évident, je verrai venir la prochaine ») qui pousse aux paris de prédiction. 2) Il rend <b>injuste avec soi-même</b> (« j'aurais dû savoir » sur une décision qui était raisonnable avec l'information d'alors). 3) Il fait admirer les mauvais maîtres : les gourous « qui avaient prédit le krach » ont souvent prédit DIX krachs dont un seul est arrivé — l'horloge arrêtée de la leçon 19.</p><p><b>Le comment (les antidotes).</b> 1) <b>Le journal horodaté</b> — l'arme absolue : tes thèses écrites AVANT te confrontent à ce que tu pensais VRAIMENT, pas à ce que tu crois avoir pensé (c'est pour ça que MENTOR horodate tout). 2) <b>Juger les décisions, pas les résultats</b> : une bonne décision peut mal tourner, une idiotie peut réussir ; on évalue le raisonnement avec l'information disponible à l'époque. 3) <b>Le mode mystère du Simulateur</b> : dates masquées, tu navigues sans savoir « la fin » — l'expérience la plus proche du réel, où ce biais ne peut pas tricher. 4) Devant tout gourou : demander la liste COMPLÈTE de ses prédictions, pas la meilleure.</p><p><b>Le risque.</b> Se croire immunisé après cette leçon — le biais rétrospectif s'applique aussi… au biais rétrospectif. La seule protection durable est mécanique : écrire avant, relire après. Ce que ton Journal fait déjà.</p>",
+exemple:"Dans ton post-mortem de mars : « la baisse de février était évidemment exagérée, j'aurais dû renforcer ». Ton journal, lui, dit qu'en février tu écrivais : « inquiétude : cette baisse pourrait continuer, je préfère attendre ». Les deux phrases sont de toi, à cinq semaines d'écart. Sans journal, la seconde n'aurait jamais existé — et tu te croirais clairvoyant. Avec, tu apprends VRAIMENT.",
+quiz:[
+{q:"Que fait le biais rétrospectif ?",o:["Il aide à prédire l'avenir","Il réécrit le passé pour rendre les événements « évidents » après coup","Il améliore la mémoire"],b:1,e:"« C'était évident » est presque toujours une illusion : sur le moment, l'évidence n'existait pour presque personne."},
+{q:"Pourquoi juger les décisions plutôt que les résultats ?",o:["Parce qu'une décision raisonnable peut mal tourner (et inversement) : seul le raisonnement s'améliore","Parce que les résultats ne comptent pas","Pour se consoler"],b:0,e:"Le hasard brouille les résultats à court terme. En jugeant le processus, tu améliores ce qui dépend de toi."},
+{q:"Quelle est l'arme la plus efficace contre ce biais ?",o:["Une excellente mémoire","Le journal horodaté : ce que tu pensais AVANT, écrit noir sur blanc","Suivre les bons gourous"],b:1,e:"On ne peut pas s'empêcher de réécrire ses souvenirs ; on peut s'empêcher de réécrire un document horodaté."}]},
+
+{id:"l45",niveau:6,duree:8,badge:"🗞️",badgeNom:"Rédacteur en chef",titre:"Lire la presse financière sans se faire manipuler",
+contenu:"<p><b>Le quoi.</b> La presse financière n'est pas ton conseillère : c'est une industrie de l'ATTENTION. Son incitation n'est pas que tu t'enrichisses, mais que tu cliques, reviennes, t'abonnes. Conséquence structurelle : dramatisation des baisses (« la bourse DÉVISSE », « vent de PANIQUE »), euphorisation des hausses (« l'action que tout le monde s'arrache »), et explications inventées après coup pour chaque mouvement.</p><p><b>Le pourquoi.</b> Chaque jour, les indices bougent — souvent pour rien (bruit statistique, leçon 4). Mais un titre « le CAC 40 a peu bougé pour des raisons peu claires » ne vend pas : le journaliste DOIT trouver une histoire. Résultat : des causalités fabriquées (« la bourse baisse À CAUSE DE X ») qui t'entraînent à voir des liens partout — l'inverse de la rigueur des chaînes causales de ton briefing, qui explicitent le mécanisme et son incertitude.</p><p><b>Le comment — la grille de lecture en 5 réflexes.</b> 1) <b>Traduire les pourcentages</b> : « le CAC s'effondre » = −1,8 % → dans la fourchette d'une journée banale. 2) <b>Chercher l'incitation</b> : qui parle, et que vend-il ? (Un gérant « très optimiste sur sa propre thématique », un site financé par un courtier en CFD…) 3) <b>Se méfier des causalités du jour</b> : la même nouvelle « explique » un jour la hausse, le lendemain la baisse. 4) <b>Fuir les superlatifs</b> : « historique », « du jamais vu », « imminent » — vocabulaire d'audience, pas d'analyse. 5) <b>Remonter à la source primaire</b> : le chiffre officiel, le communiqué, le rapport annuel (leçon 32) — pas leur résumé au troisième degré.</p><p><b>Le risque.</b> Basculer dans le cynisme total (« tout est faux ») et se couper de l'information. La presse de qualité existe et documente les FAITS très bien ; c'est son INTERPRÉTATION à chaud et sa dramatisation qu'il faut filtrer. Les faits, oui ; le frisson, non merci.</p>",
+exemple:"Lundi : « Les marchés chutent, inquiets des taux ». Mercredi, mêmes taux : « Les marchés montent, rassurés sur les taux ». La même cause « explique » deux effets opposés en 48 h — parce qu'il ne s'agissait pas d'une explication mais d'un habillage. Ton briefing MENTOR aurait dit : « mouvement de ±1 %, sans catalyseur identifiable : c'est le bruit normal du marché » — moins vendeur, plus vrai.",
+quiz:[
+{q:"Quelle est l'incitation première d'un média financier grand public ?",o:["Que tu t'enrichisses","Capter ton attention (clics, audience, abonnements)","Éduquer les débutants"],b:1,e:"Ce n'est ni un scandale ni un complot : c'est leur modèle économique. Le comprendre suffit à lire autrement."},
+{q:"« La bourse dévisse » pour −1,5 % dans la journée. Réaction saine ?",o:["Vendre avant la catastrophe","Traduire : variation banale, des dizaines par an — poursuivre sa journée","Acheter en urgence"],b:1,e:"Toujours convertir le vocabulaire dramatique en chiffres, puis comparer aux fourchettes normales."},
+{q:"Pourquoi se méfier des explications quotidiennes des mouvements de marché ?",o:["Les journalistes mentent toujours","Le marché bouge souvent sans cause identifiable, mais un article DOIT raconter une histoire","Les mouvements n'existent pas"],b:1,e:"La causalité fabriquée après coup est un genre journalistique. Une vraie chaîne causale explicite son mécanisme ET son incertitude."}]},
+
+{id:"l46",niveau:6,duree:9,badge:"🚪",badgeNom:"Sortie maîtrisée",titre:"Quand vendre, vraiment ? L'art le plus difficile",
+contenu:"<p><b>Le quoi.</b> On enseigne partout quand acheter ; presque jamais quand vendre. Or la vente concentre les pires erreurs : vendre en panique (le classique), vendre ses gagnants trop tôt (« prendre ses profits ») en gardant ses perdants (aversion à la perte, leçon 17), ou ne JAMAIS vendre par paralysie.</p><p><b>Les 4 bonnes raisons de vendre — et les seules.</b> 1) <b>Ta thèse est invalidée</b> : le critère d'invalidation écrit dans ta thèse (leçon 22) est atteint — tu avais décidé À FROID que ce signal signifierait « je me suis trompé ». Vendre là n'est pas un échec, c'est le SYSTÈME qui fonctionne. 2) <b>Tu as besoin de l'argent</b> pour un projet de vie planifié — c'était même le but. 3) <b>Le rebalancement</b> : une ligne dépasse largement sa place cible (leçon 23) — on taille par discipline, pas par peur. 4) <b>Une meilleure opportunité clairement identifiée</b> — la plus piégeuse : exige une thèse écrite complète sur la nouvelle idée, sinon c'est de l'agitation déguisée.</p><p><b>Les mauvaises raisons (95 % des ventes réelles).</b> « Ça baisse » (si la thèse tient, une baisse est un prix plus intéressant, pas un signal) ; « ça a beaucoup monté » (les grands gagnants de long terme se détruisent à coups de « prises de profit » — couper ses fleurs pour arroser ses mauvaises herbes, disait Peter Lynch) ; « tout le monde vend » (leçon 17) ; « pour faire quelque chose » (l'ennui est un coût de la bonne gestion).</p><p><b>Le comment.</b> Avant CHAQUE vente, le test des 4 raisons : laquelle s'applique ? Aucune → tu es probablement en train d'obéir à une émotion ; applique la règle des 24 h et note ta pulsion au Journal (l'écriture dégonfle les pulsions mieux que la volonté). Et pour les ETF du cœur de portefeuille en phase d'épargne : la réponse à « quand vendre ? » est presque toujours « pas avant ton horizon » — c'est leur beauté.</p>",
+exemple:"Position A : +60 %, thèse intacte, 12 % du portefeuille → AUCUNE des 4 raisons : on ne vend pas (même si « prendre ses profits » démange). Position B : −25 %, ET le critère d'invalidation (« perte du client principal ») vient de se réaliser → raison n°1 : on vend, sereinement, en notant la leçon. L'ironie : la plupart des gens font l'inverse — ils vendent A et gardent B « en attendant que ça remonte ».",
+quiz:[
+{q:"« Mon action a pris 60 %, je prends mes profits. » Bonne raison ?",o:["Oui, toujours sécuriser","Non, pas en soi : si la thèse tient et la ligne reste à sa place, la hausse n'est pas une raison de vendre","Oui si la presse le conseille"],b:1,e:"Couper systématiquement ses gagnants prive des rares très grandes réussites qui font la performance de long terme."},
+{q:"Quelle est la vente « noble », signe que ton système fonctionne ?",o:["La vente de panique","La vente sur critère d'invalidation atteint, décidé à froid dans la thèse","La vente pour s'occuper"],b:1,e:"Tu avais défini AVANT ce qui prouverait ton erreur ; c'est arrivé ; tu exécutes. C'est exactement ça, investir en adulte."},
+{q:"Une pulsion de vente monte et aucune des 4 raisons ne s'applique. Que faire ?",o:["Vendre vite avant de changer d'avis","Règle des 24 h + écrire la pulsion au Journal","Doubler la position"],b:1,e:"L'écriture transforme une émotion en objet d'analyse. Demain, tu décideras avec le cortex plutôt qu'avec l'amygdale."}]},
+
+{id:"l47",niveau:6,duree:8,badge:"🎢",badgeNom:"Tête froide en sommet",titre:"Gérer les gains : l'euphorie est plus dangereuse que la panique",
+contenu:"<p><b>Le quoi.</b> Tout le monde se prépare aux krachs ; presque personne ne se prépare à la HAUSSE. Or les marchés haussiers fabriquent leurs propres poisons : l'excès de confiance (« je suis doué » — non, le marché montait), l'inflation du risque (positions de plus en plus grosses, valeurs de plus en plus spéculatives), l'effet maison du casino (« je ne joue que mes gains »), et l'abandon du plan (« le DCA, c'est pour les débutants »).</p><p><b>Le pourquoi.</b> Les études comportementales sont formelles : les particuliers prennent leurs PIRES décisions en haut de cycle, pas en bas. La panique fait vendre une fois ; l'euphorie fait accumuler pendant des mois des positions surdimensionnées et fragiles — le vrai dégât du krach suivant s'est construit là. Relis la leçon 43 : 1929 s'est joué en 1928.</p><p><b>Le comment — les garde-fous d'un marché qui monte.</b> 1) <b>Attribution honnête</b> : chaque trimestre gagnant, écris au Journal « quelle part vient de mon talent, quelle part de la marée ? » (réponse honnête : surtout la marée). 2) <b>Les seuils mécaniques</b> : l'alerte des 20 % par ligne (déjà dans MENTOR) et le rebalancement annuel deviennent VITAUX en haussier — c'est là qu'ils taillent l'exubérance. 3) <b>Le test de l'inversion</b> : avant chaque nouvel achat euphorique, « si cette position perdait 40 % le mois prochain, mon plan de vie changerait-il ? ». 4) <b>Se méfier de son historique récent</b> : trois bonnes décisions de suite est le moment statistique où l'on prend la mauvaise, en plus gros. 5) Relire son plan (leçon 26) : il a été écrit par ton toi rationnel — l'euphorique n'a pas le droit de le réécrire.</p><p><b>Le risque.</b> Croire que cette leçon concerne les autres. L'euphorie ne se ressent pas comme de l'euphorie : elle se ressent comme de la LUCIDITÉ (« cette fois je comprends le marché »). C'est son génie. Seuls les mécanismes écrits t'en protègent.</p>",
+exemple:"Journal de Théo, marché haussier : mars « +8 %, mon analyse paie » ; juin « +19 %, je passe mes positions de 5 % à 12 % chacune, le DCA me semble trop lent » ; septembre « j'ai pris une petite valeur dont tout le monde parle, ça monte déjà ». Décembre : correction de 18 % — ses grosses positions récentes perdent 35 %. La correction était banale ; c'est l'ÉTÉ qui a fait les dégâts. Son post-mortem MENTOR le lui montrera noir sur blanc.",
+quiz:[
+{q:"Quand les particuliers prennent-ils statistiquement leurs pires décisions ?",o:["Pendant les krachs","En haut de cycle, portés par l'euphorie et l'excès de confiance","En vacances"],b:1,e:"La panique fait une erreur ; l'euphorie en fait accumuler pendant des mois — plus grosses, plus fragiles, plus spéculatives."},
+{q:"Le marché a monté et ton portefeuille aussi. Conclusion honnête ?",o:["Je suis doué","Surtout la marée : quand tout monte, tout le monde a « raison »","Il faut accélérer"],b:1,e:"L'attribution honnête (talent vs marée) est l'exercice d'humilité qui prévient l'inflation du risque."},
+{q:"Pourquoi l'euphorie est-elle si difficile à détecter en soi-même ?",o:["Elle ne se ressent pas comme une émotion mais comme de la lucidité","Elle n'existe pas","Elle fait mal à la tête"],b:0,e:"« Cette fois je comprends le marché » EST le symptôme. D'où les garde-fous mécaniques : seuils, rebalancement, plan écrit intouchable."}]},
+
+{id:"l48",niveau:6,duree:9,badge:"⏳",badgeNom:"Marathonien",titre:"Tenir 10 ans : le vrai défi n'est pas intellectuel",
+contenu:"<p><b>Le quoi.</b> Tout ce que tu as appris tient dans une main ; le défi restant tient en un mot : DURER. Les statistiques sont cruelles : une grande partie des particuliers abandonne dans les 3 premières années — pas ruinés, découragés : premier marché baissier, lassitude des versements, distraction par une mode (crypto du moment, immobilier « facile »), ou simple oubli.</p><p><b>Le pourquoi.</b> Les intérêts composés (leçon 7) ont un profil psychologiquement pervers : les 5 premières années, la boule de neige est DÉCEVANTE (tes versements font l'essentiel, les gains semblent dérisoires) ; la magie n'explose qu'après 10-15 ans — précisément là où la plupart ont abandonné. Réussir en bourse, c'est surtout réussir à s'ennuyer plus longtemps que les autres.</p><p><b>Le comment — l'architecture de la durée.</b> 1) <b>Automatiser à mort</b> : virements programmés, DCA automatique — la meilleure décision est celle qu'on n'a plus à prendre. 2) <b>Ritualiser petit</b> : le briefing MENTOR de 5 minutes est conçu pour ça — un fil quotidien LÉGER vaut mieux que des passions de trois semaines. 3) <b>Prévoir ses absences</b> : tu vas te lasser (grossesse, déménagement, burn-out, vie) — un plan qui survit à 6 mois d'inattention (ETF + virements auto) est un bon plan ; un plan qui exige ta vigilance est une bombe à retardement. 4) <b>Mesurer ce qui motive</b> : pas la performance (déprimante à court terme) mais le patrimoine total versé + le chemin vers ton chiffre de la leçon 42. 5) <b>Les rituels MENTOR longs</b> : post-mortem hebdo, bilan mensuel, inventaire annuel — trois boucles qui te ramènent doucement quand tu dérives.</p><p><b>Le risque.</b> Confondre intensité et constance. L'investisseur qui passe 20 h/semaine sur les marchés la première année puis plus rien perd contre celui qui y passe 15 minutes par semaine pendant vingt ans. La bourse est l'un des rares domaines où l'ennui est un avantage compétitif.</p>",
+exemple:"Deux trajectoires, 200 €/mois à 6 %/an. Enzo, passionné : 18 mois intensifs, puis lassitude, arrêt des versements, revend tout à −12 % en 2029 « déçu ». Total : une expérience amère. Inès, automatisée : virements programmés, 5 min de briefing par jour, deux baisses de 20 % traversées « sans regarder ». Après 20 ans : ≈ 92 000 €, dont 44 000 € de gains. La différence entre eux n'était ni l'intelligence ni le capital : c'était l'architecture.",
+quiz:[
+{q:"Pourquoi les 5 premières années d'épargne sont-elles psychologiquement difficiles ?",o:["Les marchés baissent toujours au début","La boule de neige paraît dérisoire : les versements dominent, les gains semblent minuscules","À cause des impôts"],b:1,e:"La composition est exponentielle : plate au début, explosive après 10-15 ans. Ceux qui jugent à 3 ans abandonnent juste avant la pente."},
+{q:"Quelle est la caractéristique d'un plan qui DURE ?",o:["Il exige une vigilance quotidienne","Il survit à 6 mois d'inattention totale grâce à l'automatisation","Il change chaque mois"],b:1,e:"La vie te distraira, c'est certain. Virements automatiques + ETF diversifiés = un plan qui travaille pendant que tu vis."},
+{q:"« L'ennui est un avantage compétitif en bourse » signifie…",o:["Il faut dormir plus","La constance tranquille bat l'intensité éphémère : durer > briller","La bourse est ennuyeuse donc inutile"],b:1,e:"15 minutes par semaine pendant 20 ans écrasent 20 heures par semaine pendant 18 mois. Le temps est le facteur rare — pas l'attention."}]},
+
+{id:"l49",niveau:6,duree:8,badge:"🤝",badgeNom:"Passeur",titre:"Parler d'argent aux proches : aider sans jouer au gourou",
+contenu:"<p><b>Le quoi.</b> À mesure que tu progresses, un phénomène inévitable : les proches vont te demander conseil (« tu t'y connais, je mets quoi sur mon livret ? ») — et tu vas avoir ENVIE de conseiller. Cette leçon trace la ligne entre transmettre (précieux) et prescrire (dangereux).</p><p><b>Le pourquoi.</b> Trois asymétries rendent le conseil aux proches piégeux : 1) Tu ne connais pas leur situation complète (dettes, projets, peurs — l'anamnèse que MENTOR t'a fait passer, tu ne la leur feras pas). 2) L'asymétrie émotionnelle : s'ils gagnent grâce à toi, merci ; s'ils perdent, c'est TA faute — et les repas de famille s'en souviennent des années. 3) Le biais de sélection : on vient te voir APRÈS avoir entendu tes réussites, en attendant des miracles. Et rappel légal : le conseil en investissement personnalisé est une activité réglementée (AMF) — même MENTOR s'interdit de prescrire.</p><p><b>Le comment — transmettre proprement.</b> 1) <b>Partager des principes, jamais des tickers</b> : « diversification, frais bas, horizon long, épargne de précaution d'abord » — oui ; « achète X » — jamais. 2) <b>Montrer le chemin, pas la destination</b> : offrir un livre, montrer MENTOR, expliquer COMMENT tu t'es formé. 3) <b>La phrase-outil</b> : « je peux te raconter ce que je fais et pourquoi, mais ta situation est différente et je ne suis pas conseiller — pour du sur-mesure, vois un professionnel. » 4) <b>Protéger les vulnérables</b> : le parent retraité démarché, l'ami en difficulté attiré par un « placement à 8 %/mois » — là, ton rôle est actif : montrer la leçon 20 et les listes noires AMF peut littéralement sauver leurs économies.</p><p><b>Le risque.</b> L'inverse : devenir insupportable. L'investisseur récemment converti qui évangélise chaque dîner est un cliché — et il prêche d'autant plus fort que ses résultats sont récents (leçon 47). Ton meilleur argument restera ton calme sur dix ans, pas tes sermons.</p>",
+exemple:"Ta cousine : « on m'a proposé un placement à 9 % garanti, t'en penses quoi ? » Réponse gourou : « moi je fais mieux avec mes actions ». Réponse passeur : « 9 % GARANTI n'existe pas — c'est le mot garanti qui m'alerte. Regarde deux minutes avec moi la liste noire de l'AMF… le site y est. Tu viens d'éviter de perdre 15 000 €. Si tu veux apprendre les bases sereinement, je te montre comment j'ai commencé. » Aucun ticker prescrit, des économies sauvées.",
+quiz:[
+{q:"Un proche te demande « quelle action acheter ». Réponse de passeur ?",o:["Lui donner ton meilleur ticker","Partager les principes et le chemin d'apprentissage, jamais de prescription personnalisée","Lui gérer son compte"],b:1,e:"Sans connaître sa situation complète, prescrire est un service empoisonné — et juridiquement, le conseil personnalisé est réglementé."},
+{q:"Pourquoi le conseil aux proches est-il émotionnellement asymétrique ?",o:["Ils ne t'écouteront pas","Leurs gains seront « normaux », leurs pertes seront « ta faute »","Ils vont te copier"],b:1,e:"Cette asymétrie empoisonne des relations pour des années. On transmet des méthodes, pas des responsabilités."},
+{q:"Dans quel cas ton intervention active est-elle un devoir ?",o:["Quand un proche vulnérable est visé par une arnaque manifeste","Quand quelqu'un refuse tes conseils","Quand la bourse monte"],b:0,e:"Face au « garanti 9 % par mois » visant un parent : montrer les listes noires AMF et la mécanique de l'arnaque peut sauver ses économies."}]},
+
+{id:"l50",niveau:6,duree:10,badge:"🏆",badgeNom:"Investisseur autonome",titre:"La leçon finale : ton système complet, et après",
+contenu:"<p><b>Le quoi.</b> Cinquante leçons plus tard, fais l'inventaire : tu sais ce qu'est une action et un ETF (fondations), lire une entreprise (niveau 4), architecturer un patrimoine entier (niveau 5), et — le plus rare — tu connais tes ennemis intérieurs et leurs antidotes (niveau 6). Il ne te manque rien d'essentiel. Voici la synthèse finale et la suite du chemin.</p><p><b>Ton système en une page — les 10 commandements MENTOR.</b> 1) Le matelas de sécurité avant tout. 2) N'investis que l'argent dont tu n'as pas besoin avant des années. 3) Le cœur en ETF diversifiés, les convictions en satellites ≤ 20 %. 4) DCA automatique, qu'il pleuve ou qu'il vente. 5) Frais < 0,5 %, enveloppes optimisées (PEA → AV → PER → CTO). 6) Toute décision = thèse écrite AVANT, avec critère d'invalidation. 7) Jamais de levier, de CFD, de « garanti 9 % ». 8) Vendre uniquement sur les 4 raisons de la leçon 46. 9) Rituels : briefing court, post-mortem hebdo, inventaire annuel. 10) Juger les décisions, pas les résultats — et durer.</p><p><b>Et après ? L'apprentissage sans fin.</b> 1) Le <b>Simulateur d'époques</b> : rejoue chaque crise, puis le mode mystère — chaque traversée muscle ton sang-froid. 2) Le <b>défi du mois</b> : une analyse réelle notée par ton professeur, chaque mois — 12 défis = 12 vraies études de cas par an. 3) Les <b>livres fondateurs</b> pour aller plus loin que MENTOR : « L'investisseur intelligent » (Graham), « Et si vous en saviez assez pour gagner en bourse » (Lynch), « Psychologie de l'argent » (Housel). 4) Le <b>monde réel</b> : chaque année de marché vécue t'apprendra ce qu'aucune leçon ne peut simuler. Ton diplôme MENTOR n'est pas une fin : c'est un permis de conduire. La route, maintenant.</p><p><b>Le dernier risque.</b> L'orgueil du diplômé (leçon 47 !). Le marché a humilié tous ceux qui se croyaient arrivés, sans exception, depuis quatre siècles. La posture finale du bon investisseur tient en trois mots, qui font une belle dernière phrase de cours : <b>humble, discipliné, patient.</b></p>",
+exemple:"Relis ta toute première entrée de journal — celle de tes débuts sur MENTOR. Mesure le chemin : les mots que tu ne comprenais pas, les peurs disproportionnées, les certitudes naïves. Ce décalage, c'est ton capital le plus précieux — plus que tes positions. Et dans dix ans, l'entrée d'aujourd'hui te fera le même effet. C'est exactement ça, être un investisseur : quelqu'un qui n'a jamais fini d'apprendre, et qui le sait.",
+quiz:[
+{q:"Quelle est la structure recommandée d'un portefeuille MENTOR ?",o:["100 % convictions personnelles","Un cœur d'ETF diversifiés + des satellites de conviction limités (≤ 20 % par ligne)","100 % fonds euros"],b:1,e:"Le cœur assure la trajectoire quoi qu'il arrive ; les satellites nourrissent l'apprentissage et l'intérêt — sans jamais mettre le voyage en péril."},
+{q:"Que représente le diplôme MENTOR ?",o:["La preuve que tu ne te tromperas plus","Un permis de conduire : les vraies leçons viennent de la route, année après année","Une garantie de rendement"],b:1,e:"Aucune formation ne remplace les cycles vécus. Le diplôme atteste des fondations — le marché fera le reste, à condition de durer."},
+{q:"Quelle est la posture finale du bon investisseur ?",o:["Confiant, rapide, audacieux","Humble, discipliné, patient","Secret, méfiant, solitaire"],b:1,e:"Quatre siècles de marchés n'ont épargné aucun orgueilleux. L'humilité n'est pas une politesse : c'est une stratégie de survie."}]}
+);
+/* ============================================================
    NOYAU — état, persistance, utilitaires, composants UI
    ============================================================ */
 
@@ -610,6 +820,8 @@ function etatDefaut(){return {
   journal:[],postMortems:[],
   ecole:{leconsValidees:[],quizScores:{},badges:[]},
   sauvegarde:{derniereDate:null,rappelsIgnores:0,tutoVu:false},
+  simulateur:{enCours:null,finies:[]},
+  defis:{},
   onboarding:{etape:0,acte:1,ecoleSeule:false},
   reglages:{cacheMinutes:15,dcaJour:5,dcaMontant:0},
   compteurs:{decisionsVirtuellesDebriefees:0,joursJournal:[]}
@@ -1860,28 +2072,68 @@ function importerCSV(){
    ============================================================ */
 let vueEcole="liste",leconOuverte=null,quizEtat=null;
 
+function leconsValideesNiveau(niv){ return LECONS.filter(l=>l.niveau===niv&&S.ecole.leconsValidees.includes(l.id)).length; }
+function niveauFini(niv){ return leconsValideesNiveau(niv)===LECONS.filter(l=>l.niveau===niv).length; }
 function niveauDebloque(n){
   const v=S.ecole.leconsValidees.length;
   if(n===1) return true;
   if(n===2) return v>=6;
-  return v>=12;
+  if(n===3) return v>=12;
+  // Niveaux 4-6 : la suite du parcours, volontairement étalée sur plusieurs
+  // mois — chaque palier exige de la pratique, pas seulement de la lecture.
+  if(n===4) return niveauFini(1)&&niveauFini(2)&&niveauFini(3);
+  if(n===5) return niveauDebloque(4)&&niveauFini(4)&&simEtat().finies.length>=1;
+  return niveauDebloque(5)&&niveauFini(5)&&simEtat().finies.length>=2&&semainesJournal()>=8;
 }
+const INFOS_NIVEAUX={
+ 1:{ico:"🌱",nom:"Les fondations",cond:"ouvert d'emblée"},
+ 2:{ico:"🌿",nom:"La pratique",cond:"se débloque à 6 leçons validées"},
+ 3:{ico:"🌳",nom:"La maîtrise",cond:"se débloque à 12 leçons validées"},
+ 4:{ico:"🔬",nom:"L'atelier de l'analyste",cond:"se débloque quand les 26 leçons des fondations sont validées"},
+ 5:{ico:"🏛️",nom:"Le patrimoine complet",cond:"exige le niveau 4 complet + 1 voyage au Simulateur d'époques"},
+ 6:{ico:"🧊",nom:"L'école du sang-froid",cond:"exige le niveau 5 complet + 2 voyages au simulateur + 8 semaines d'activité"}
+};
 function rendreEcole(){
   if(vueEcole==="glossaire") return rendreGlossaire();
   if(vueEcole==="lecon"&&leconOuverte) return rendreLecon();
+  if(vueEcole==="simulateur") return rendreSimulateur();
+  if(vueEcole==="simulation") return rendreSimulationEnCours();
   const v=S.ecole.leconsValidees.length;
   let h='<div class="enTete"><h1>L\'École</h1><button class="btn fantome compact" onclick="vueEcole=\'glossaire\';rendre()">📖 Glossaire</button></div>';
   h+='<p class="sousTitre">'+v+" / "+LECONS.length+' leçons validées</p><div class="progExt"><div class="progInt vert" style="width:'+(v/LECONS.length*100)+'%"></div></div>';
   if(!S.profil.fait) h+='<div class="encart info">📚 Tu explores l\'École en libre accès. Les briefings IA et le portefeuille s\'ouvriront quand tes clés API et ton profil seront prêts (onglet Profil).</div>';
+  // Diplôme (le grand objectif de plusieurs mois).
+  if(verifierDiplome()){
+    h+='<div class="carte centre" style="border:2px solid var(--hausse)"><div style="font-size:48px">🏆</div><h2>Investisseur autonome</h2><p class="petit">Diplôme MENTOR obtenu le '+fmtDate(S.compteurs.diplomeLe)+'</p><p class="mHaut8"><i>« Humble, discipliné, patient. »</i></p></div>';
+  }else if(niveauDebloque(4)){
+    const cds=conditionsDiplome();
+    h+='<div class="carte"><div class="carteTitre"><span class="ico">🏆</span>Vers le diplôme « Investisseur autonome »</div>'+cds.map(c=>'<div class="jalon"><div class="jalonIco '+(c.fait?"ok":"")+'">'+(c.fait?"✓":c.ico)+'</div><div><b>'+c.nom+'</b><div class="petit">'+c.detail+"</div></div></div>").join("")+'<p class="petit mHaut8">Un parcours de plusieurs mois, volontairement : le sang-froid ne s\'apprend pas en une semaine.</p></div>';
+  }
+  // Simulateur d'époques (ouvert dès 6 leçons : l'entraînement précoce est vertueux).
+  if(v>=6){
+    h+='<button class="ligneListe carte" style="border-radius:var(--rayon)" onclick="vueEcole=\'simulateur\';rendre()"><span style="font-size:28px">🎬</span><div class="dPrincipal"><div class="dTitre">Le Simulateur d\'époques</div><div class="dSous">Revis 1929… pardon, 2000, 2008, 2020, 2022 — en accéléré ('+simEtat().finies.length+' voyage'+(simEtat().finies.length>1?"s":"")+' terminé'+(simEtat().finies.length>1?"s":"")+')</div></div><span class="chevron">›</span></button>';
+  }
+  // Défi du mois (ouvert avec le niveau 4).
+  if(niveauDebloque(4)){
+    const defi=defisEtat()[moisCourant()];
+    h+='<div class="carte" id="zoneDefi"><div class="carteTitre"><span class="ico">📝</span>Le défi du mois · '+new Date().toLocaleDateString("fr-FR",{month:"long"})+"</div>";
+    if(!defi||!defi.contenu) h+='<p class="petit">Chaque mois, une vraie mission d\'analyse liée à l\'actualité — notée par ton professeur. Douze défis par an = douze études de cas réelles.</p><button class="btn secondaire compact mHaut8" onclick="genererDefiDuMois()">Recevoir mon défi ✨</button>';
+    else{
+      h+="<b>"+ech(defi.contenu.titre)+"</b><p class='mHaut8 petit'>"+lierTermes(ech(defi.contenu.contexte||""))+"</p><p class='mHaut8'>"+lierTermes(ech(defi.contenu.mission||""))+"</p>";
+      if(defi.notation) h+='<div class="encart succes mHaut8">✓ Rendu et corrigé : <b>'+ech(String(defi.notation.note_sur_20))+"/20</b> — "+ech((defi.notation.appreciation||"").slice(0,120))+"</div>";
+      else h+='<button class="btn compact mHaut8" onclick="sheetCopieDefi()">✍️ Rédiger / rendre ma copie</button>';
+    }
+    h+="</div>";
+  }
   // Badges gagnés.
   const badges=LECONS.filter(l=>S.ecole.leconsValidees.includes(l.id));
   if(badges.length) h+='<div class="carte" style="padding:12px"><div class="carteTitre"><span class="ico">🏅</span>Tes badges</div><div>'+badges.map(l=>'<span class="badgeRond"><span class="rond">'+l.badge+"</span>"+ech(l.badgeNom)+"</span>").join("")+"</div></div>";
-  [1,2,3].forEach(niv=>{
-    const ouvertes=niveauDebloque(niv);
-    h+='<div class="carteTitre mHaut"><span class="ico">'+(ouvertes?["","🌱","🌿","🌳"][niv]:"🔒")+"</span>Niveau "+niv+" — "+["","Les fondations","La pratique","La maîtrise"][niv]+(ouvertes?"":" · se débloque à "+(niv===2?6:12)+" leçons validées")+"</div>";
+  [1,2,3,4,5,6].forEach(niv=>{
+    const ouvertes=niveauDebloque(niv), info=INFOS_NIVEAUX[niv];
+    h+='<div class="carteTitre mHaut"><span class="ico">'+(ouvertes?info.ico:"🔒")+"</span>Niveau "+niv+" — "+info.nom+(ouvertes?"":" · "+info.cond)+"</div>";
     h+='<div class="listeGroupe">'+LECONS.filter(l=>l.niveau===niv).map(l=>{
       const faite=S.ecole.leconsValidees.includes(l.id);
-      return '<button class="ligneListe" '+(ouvertes?'onclick="ouvrirLecon(\''+l.id+'\')"':'style="opacity:.45" onclick="toast(\'🔒 Valide d\\\'abord les leçons des niveaux précédents — chaque brique compte !\')"')+'><div class="jalonIco '+(faite?"ok":"")+'">'+(faite?"✓":l.badge)+'</div><div class="dPrincipal"><div class="dTitre">'+ech(l.titre)+'</div><div class="dSous">'+l.duree+" min · quiz de 3 questions"+(faite?" · validée ✓":"")+'</div></div><span class="chevron">›</span></button>';
+      return '<button class="ligneListe" '+(ouvertes?'onclick="ouvrirLecon(\''+l.id+'\')"':'style="opacity:.45" onclick="toast(\'🔒 '+ech(info.cond).replace(/'/g,"\\'")+' — chaque brique compte !\')"')+'><div class="jalonIco '+(faite?"ok":"")+'">'+(faite?"✓":l.badge)+'</div><div class="dPrincipal"><div class="dTitre">'+ech(l.titre)+'</div><div class="dSous">'+l.duree+" min · quiz de 3 questions"+(faite?" · validée ✓":"")+'</div></div><span class="chevron">›</span></button>';
     }).join("")+"</div>";
   });
   return h;
@@ -1962,6 +2214,291 @@ function rendreGlossaire(){
   return '<button class="btn discret" style="justify-content:flex-start" onclick="vueEcole=\'liste\';rendre()">‹ École</button><h1>Glossaire</h1><p class="sousTitre">'+termes.length+' termes, expliqués simplement. Chaque mot souligné dans l\'app pointe ici.</p>'+
   '<input class="champ mHaut8" placeholder="🔎 Chercher un terme…" value="'+ech(filtreGlossaire)+'" oninput="filtreGlossaire=this.value.toLowerCase();rendre();this.focus()">'+
   '<div class="listeGroupe">'+filtres.map(t=>'<button class="ligneListe" onclick="afficherDefinition(\''+t.replace(/'/g,"\\'")+'\')"><div class="dPrincipal"><div class="dTitre">'+ech(t.charAt(0).toUpperCase()+t.slice(1))+'</div><div class="dSous">'+ech(GLOSSAIRE[t].slice(0,64))+'…</div></div><span class="chevron">›</span></button>').join("")+"</div>";
+}
+/* ============================================================
+   SIMULATEUR D'ÉPOQUES — revivre les grandes crises en accéléré
+   Un mois de marché par décision : l'élève traverse 2 à 5 ans
+   d'histoire boursière réelle, avec les « unes » de l'époque,
+   puis compare son résultat au DCA discipliné et au tout-cash.
+   Données mensuelles indicielles APPROXIMATIVES (arrondies,
+   base 100) — l'exactitude au point près n'a aucune valeur
+   pédagogique ; la forme des tempêtes, si.
+   Mode mystère : dates masquées et unes anonymisées, pour
+   neutraliser le biais rétrospectif (leçon 44).
+   ============================================================ */
+const SIMULATIONS=[
+{id:"bulle2000",titre:"La bulle internet",periode:"1999 – 2003",indice:"Nasdaq",emoji:"💻",
+ resume:"Tu débarques en janvier 1999 : la « nouvelle économie » rend tout le monde riche sur le papier. 60 mois t'attendent — dont un sommet vertigineux et une descente de -78 %.",
+ debut:"1999-01",
+ valeurs:[100,105,102,108,110,115,113,118,122,130,142,160, 170,190,210,180,165,175,168,180,165,145,120,105, 110,95,80,88,90,85,82,75,60,65,72,78, 75,70,72,65,62,55,48,50,45,44,52,48, 50,49,50,54,58,60,63,65,66,70,71,73],
+ unes:{0:"« La nouvelle économie abolit les vieilles règles » : les valeurs internet s'arrachent, chaque introduction en bourse double le premier jour.",
+  10:"Votre coiffeur vous donne des tuyaux boursiers. Les magazines titrent : « Devenez riche avec les .com ».",
+  14:"SOMMET — Un analyste vedette : « les profits sont un concept du passé, seuls comptent les clics ». Des entreprises sans un euro de chiffre d'affaires valent des milliards.",
+  16:"Premières secousses : quelques stars du web publient des pertes abyssales. « Simple respiration », rassurent les experts.",
+  22:"Les faillites de start-up s'enchaînent. Les licenciements commencent dans la tech.",
+  27:"Un an après le sommet : -50 %. « Le pire est derrière nous », répètent les mêmes experts — pour la quatrième fois.",
+  32:"Attentats du 11 septembre : les bourses ferment plusieurs jours, puis chutent. La peur est totale.",
+  41:"Scandales comptables géants (Enron, WorldCom) : même les chiffres officiels mentaient. Plus personne ne veut entendre parler d'actions.",
+  44:"CREUX — Le Nasdaq a perdu 78 % depuis le sommet. Les magazines titrent : « La mort de l'investissement en actions ».",
+  50:"Sans bruit, sans une de journaux, les cours remontent depuis des mois. Presque personne n'ose y retourner."}},
+{id:"crise2008",titre:"La crise financière mondiale",periode:"2007 – 2011",indice:"Actions monde",emoji:"🏦",
+ resume:"Janvier 2007 : l'immobilier américain « ne peut pas baisser », les banques regorgent de profits. Tu vas traverser la pire crise financière depuis 1929 — et sa renaissance.",
+ debut:"2007-01",
+ valeurs:[100,98,100,104,107,105,102,103,107,110,105,104, 98,95,94,98,99,91,90,91,82,67,62,63, 57,52,48,54,58,60,64,68,71,72,76,78, 75,77,81,82,76,72,77,74,80,83,83,88, 90,92,92,94,93,91,89,80,74,82,80,82],
+ unes:{0:"L'immobilier américain bat des records. Les banques titrisent tout, les bonus explosent : « le risque a été dompté par la finance moderne ».",
+  6:"Deux fonds spéculatifs liés aux crédits immobiliers « subprime » s'effondrent. Terme inconnu du grand public — pour l'instant.",
+  9:"SOMMET — Records historiques à Wall Street. Les inquiets passent pour des rabat-joie.",
+  14:"Une grande banque d'affaires est sauvée in extremis. Les marchés tanguent, les autorités rassurent.",
+  20:"SÉISME — Lehman Brothers, 158 ans d'âge, fait faillite un lundi matin. Le système financier mondial se fige : plus aucune banque ne prête à une autre.",
+  21:"Chute libre : -10 % certains jours. Les États nationalisent des banques en urgence. On parle de « fin du capitalisme ».",
+  26:"CREUX — Mars 2009 : -56 % depuis le sommet. Un célèbre magazine titre « La mort des actions ». Les particuliers vendent massivement… au plus bas.",
+  30:"Les banques centrales inondent le système de liquidités. Les cours remontent fort — dans l'indifférence générale : tout le monde regarde ailleurs.",
+  40:"Deux ans après le creux : +70 %. Ceux qui ont vendu en 2009 ne sont jamais revenus.",
+  55:"Nouvelle alerte : crise de la dette en zone euro. Les répliques d'un grand séisme durent des années."}},
+{id:"covid2020",titre:"Le krach éclair du Covid",periode:"2019 – 2021",indice:"Actions monde",emoji:"🦠",
+ resume:"Juillet 2019 : tout va bien. Dans 8 mois, l'économie mondiale s'arrêtera net — et tu vivras le krach le plus rapide ET le rebond le plus foudroyant de l'histoire moderne.",
+ debut:"2019-07",
+ valeurs:[100,98,100,102,105,107, 109,104,76,85,89,91,95,100,97,95,105,109, 108,111,115,118,119,122],
+ unes:{0:"Croissance solide, chômage au plus bas : les marchés flânent de record en record.",
+  6:"Une pneumonie inconnue circule en Chine. Brève dépêche en page 12. Les marchés n'y prêtent aucune attention.",
+  7:"Le virus se propage : premières villes confinées en Asie. Les bourses commencent à s'inquiéter sérieusement.",
+  8:"KRACH ÉCLAIR — L'économie mondiale s'arrête : confinements généralisés. -34 % en un mois, des journées à -12 %. Du jamais vu en si peu de temps.",
+  9:"Les États et banques centrales dégainent des plans de soutien de milliers de milliards. « Quoi qu'il en coûte. »",
+  11:"L'économie réelle est à l'arrêt, le chômage partiel explose… et les bourses REMONTENT. Incompréhensible pour beaucoup — le marché regarde 2021, pas 2020.",
+  16:"Annonce des vaccins efficaces : euphorie. Les secteurs massacrés (voyage, énergie) bondissent de 20 % en une journée.",
+  22:"Dix-huit mois après « la fin du monde », les indices sont bien au-dessus de leur niveau d'avant-crise. Leçon express : le marché n'attend jamais que ça aille mieux pour remonter."}},
+{id:"inflation2022",titre:"Le retour de l'inflation",periode:"2021 – 2023",indice:"Actions monde",emoji:"📈",
+ resume:"Été 2021 : la reprise post-Covid bat son plein, l'argent est gratuit. Mais les prix commencent à grimper — et les banques centrales vont devoir tout resserrer. Une baisse LENTE, l'épreuve d'usure.",
+ debut:"2021-07",
+ valeurs:[100,102,98,103,102,105, 99,96,98,90,90,82,89,85,77,83,87,84, 89,87,89,90,91,95,98,93,89,87,95,101],
+ unes:{0:"Reprise éclatante, taux à zéro, épargne Covid déversée en bourse : tout monte, même n'importe quoi.",
+  4:"L'inflation dépasse 5 % — du jamais vu depuis 30 ans. « Transitoire », jurent les banques centrales.",
+  6:"L'inflation s'installe. Les banques centrales changent de ton : les hausses de taux arrivent. Les valeurs technologiques dévissent en premier.",
+  8:"Guerre en Ukraine : énergie et blé s'envolent, l'inflation atteint 8-10 %. Les taux montent à marche forcée.",
+  11:"Actions ET obligations baissent ensemble — l'année la plus inhabituelle depuis des décennies : plus aucun abri ne fonctionne.",
+  14:"CREUX — Octobre 2022 : -25 % depuis le sommet. Pas de panique spectaculaire, juste une usure qui décourage : neuf mois de baisse lente.",
+  18:"L'inflation ralentit enfin. Les marchés repartent avant même la première baisse de taux — comme toujours, ils anticipent.",
+  27:"Fin 2023 : les indices effacent l'essentiel de la baisse. L'épreuve d'usure aura duré deux ans — fatale aux impatients, indolore aux DCA disciplinés."}}
+];
+const SIM_CAPITAL=10000, SIM_MENSUEL=200;
+
+function simEtat(){ if(!S.simulateur) S.simulateur={enCours:null,finies:[]}; return S.simulateur; }
+function nomMoisSim(sim,mois,mystere){
+  if(mystere) return "Mois "+(mois+1)+" / "+sim.valeurs.length;
+  const [a,m]=sim.debut.split("-").map(Number);
+  const d=new Date(a,m-1+mois,1);
+  return d.toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+}
+/* Une « une » générique dérivée des données : utilisée en mode mystère
+   pour donner l'ambiance sans révéler l'époque (anti-biais rétrospectif). */
+function uneGenerique(sim,mois){
+  const v=sim.valeurs, picPasse=Math.max(...v.slice(0,mois+1)), cur=v[mois];
+  const varMois=mois>0?(cur/v[mois-1]-1)*100:0, drawdown=(cur/picPasse-1)*100;
+  if(varMois<=-12) return "Les journaux parlent de « panique historique ». Certains prédisent la fin du système.";
+  if(varMois<=-6) return "Chute brutale ce mois-ci. Les unes sont anxiogènes, les experts se contredisent.";
+  if(drawdown<=-40) return "Le pessimisme est total : « les actions, plus jamais », titre la presse. Les volumes s'assèchent.";
+  if(drawdown<=-20) return "La baisse s'éternise. Ton entourage te demande si « tu as vu tes pertes ». L'ambiance est lourde.";
+  if(varMois>=8) return "Rebond spectaculaire ! Ceux qui ont vendu s'arrachent les cheveux ; les autres n'osent pas y croire.";
+  if(mois>2&&cur>=picPasse*0.99&&varMois>1.5) return "Records en série. Tout le monde parle de bourse au déjeuner — et chacun a un tuyau.";
+  if(varMois>=3) return "Beau mois de hausse. L'optimisme revient doucement dans les journaux.";
+  if(Math.abs(varMois)<1.5) return "Mois calme. Les marchés flottent, la presse s'ennuie et parle d'autre chose.";
+  return varMois<0?"Mois hésitant, plutôt baissier. Rien de dramatique, mais le doute s'installe.":"Mois légèrement haussier, sans conviction particulière.";
+}
+function simFiniePour(id){ return simEtat().finies.filter(f=>f.id===id).length; }
+
+/* ---- Lancement ---- */
+function lancerSimulation(id,mystere){
+  let sim;
+  if(mystere){ // rotation déterministe sur les scénarios pour varier les mystères
+    sim=SIMULATIONS[(simEtat().finies.length+S.journal.length)%SIMULATIONS.length];
+  }else sim=SIMULATIONS.find(s=>s.id===id);
+  if(!sim) return;
+  simEtat().enCours={id:sim.id,mystere:!!mystere,mois:0,parts:SIM_CAPITAL/sim.valeurs[0],cash:0,dcaSuspendu:false,
+    decisions:[],ventesTotales:0,rachats:0,moisSansDCA:0};
+  sauver();
+  vueEcole="simulation"; rendre(); window.scrollTo(0,0);
+}
+function abandonnerSimulation(){ simEtat().enCours=null; sauver(); vueEcole="liste"; rendre(); }
+
+/* ---- Rendu ---- */
+function rendreSimulateur(){ // écran d'accueil de la section (liste des scénarios)
+  const e=simEtat();
+  let h='<button class="btn discret" style="justify-content:flex-start" onclick="vueEcole=\'liste\';rendre()">‹ École</button>';
+  h+='<div style="font-size:40px">🎬</div><h1>Le Simulateur d\'époques</h1><p class="sousTitre">Revis les grandes tempêtes de l\'histoire, un mois par décision. Argent fictif, émotions réelles : c\'est ici que se forge le sang-froid.</p>';
+  h+='<div class="encart info">🎓 <b>Règles du voyage.</b> Tu pars avec '+fmtEUR(SIM_CAPITAL,0)+' investis + '+fmtEUR(SIM_MENSUEL,0)+'/mois d\'épargne. Chaque mois : les unes de l\'époque, ton portefeuille, et une décision. À la fin, on compare ton résultat au DCA discipliné et au tout-liquide — et on en tire les leçons.</div>';
+  if(e.enCours){
+    const sim=SIMULATIONS.find(s=>s.id===e.enCours.id);
+    h+='<div class="carte" style="border-left:4px solid var(--accent)"><b>⏸ Voyage en cours : '+(e.enCours.mystere?"Scénario mystère":ech(sim.titre))+'</b><p class="petit">'+nomMoisSim(sim,e.enCours.mois,e.enCours.mystere)+"</p><button class='btn mHaut8' onclick=\"vueEcole='simulation';rendre()\">Reprendre le voyage</button><button class='btn discret mHaut8' onclick='abandonnerSimulation()'>Abandonner</button></div>";
+  }
+  SIMULATIONS.forEach(sim=>{
+    const nb=simFiniePour(sim.id);
+    h+='<div class="carte"><div style="display:flex;gap:10px;align-items:center"><span style="font-size:30px">'+sim.emoji+'</span><div><b>'+ech(sim.titre)+'</b><div class="petit">'+ech(sim.periode)+" · "+sim.valeurs.length+" mois · "+ech(sim.indice)+(nb?' · <span class="varHausse">✓ traversé '+nb+"×</span>":"")+"</div></div></div><p class='mHaut8 petit'>"+ech(sim.resume)+"</p>"+
+      (e.enCours?"":'<button class="btn secondaire compact mHaut8" onclick="lancerSimulation(\''+sim.id+'\')">Embarquer</button>')+"</div>";
+  });
+  h+='<div class="carte" style="border:1.5px dashed var(--accent)"><div style="display:flex;gap:10px;align-items:center"><span style="font-size:30px">❓</span><div><b>Scénario mystère</b><div class="petit">Dates masquées, unes anonymisées</div></div></div><p class="mHaut8 petit">L\'exercice ultime contre le biais rétrospectif (leçon 44) : tu ne sais ni où ni quand tu es — exactement comme dans la vraie vie, où personne ne connaît la suite du film.</p>'+
+    (e.enCours?"":'<button class="btn compact mHaut8" onclick="lancerSimulation(null,true)">Embarquer à l\'aveugle</button>')+"</div>";
+  return h;
+}
+function rendreSimulationEnCours(){
+  const e=simEtat().enCours;
+  if(!e){ vueEcole="simulateur"; return rendreSimulateur(); }
+  const sim=SIMULATIONS.find(s=>s.id===e.id);
+  const v=sim.valeurs, mois=e.mois, cours=v[mois];
+  if(mois>=v.length-1) return rendreFinSimulation();
+  const valeur=e.parts*cours, total=valeur+e.cash;
+  const varMois=mois>0?(cours/v[mois-1]-1)*100:0;
+  const serie=v.slice(0,mois+1).map((c,i)=>({d:i,c:c}));
+  const une=e.mystere?uneGenerique(sim,mois):(sim.unes[mois]||uneGenerique(sim,mois));
+  const investi=SIM_CAPITAL+SIM_MENSUEL*mois;
+  let h='<button class="btn discret" style="justify-content:flex-start" onclick="vueEcole=\'simulateur\';rendre()">‹ Mettre en pause</button>';
+  h+='<div class="enTete"><div><h2>'+(e.mystere?"❓ Scénario mystère":sim.emoji+" "+ech(sim.titre))+'</h2><p class="sousTitre" style="text-transform:capitalize">'+nomMoisSim(sim,mois,e.mystere)+" · mois "+(mois+1)+"/"+v.length+"</p></div></div>";
+  h+='<div class="progExt"><div class="progInt" style="width:'+((mois+1)/v.length*100)+'%"></div></div>';
+  h+='<div class="carte centre"><div class="petit">Ton patrimoine simulé (versé : '+fmtEUR(investi,0)+')</div><div class="heroChiffre" style="font-size:34px">'+fmtEUR(total,0)+'</div><div class="'+clsVar(total-investi)+'">'+(total>=investi?"+":"")+fmtEUR(total-investi,0)+" ("+fmtPct(investi?(total/investi-1)*100:0)+')</div><div class="petit mHaut8">📦 Investi : '+fmtEUR(valeur,0)+' · 💶 Liquide : '+fmtEUR(e.cash,0)+' · Indice ce mois : <span class="'+clsVar(varMois)+'">'+fmtPct(varMois)+"</span></div>"+dessinerGraphique(serie)+"</div>";
+  h+='<div class="carte" style="border-left:4px solid var(--ambre)"><div class="carteTitre"><span class="ico">🗞️</span>Les unes de l\'époque</div><p><i>'+ech(une)+"</i></p></div>";
+  h+='<div class="carteTitre mHaut"><span class="ico">🎯</span>Ta décision du mois</div>';
+  const btn=(action,label,sous,cls)=>'<button class="choix '+(cls||"")+'" onclick="decisionSimulation(\''+action+'\')">'+label+(sous?'<span class="sousChoix">'+sous+"</span>":"")+"</button>";
+  h+=btn("dca","📅 Verser mes "+fmtEUR(SIM_MENSUEL,0)+" comme prévu","Le plan, rien que le plan");
+  h+=btn("renforcer","💪 Verser le double si possible","Puiser dans le liquide pour profiter des prix — ou courir après la hausse ?");
+  h+=btn("suspendre","⏸ Ne pas verser ce mois-ci","L'épargne reste en liquide");
+  if(e.parts>0) h+=btn("vendreTout","🚨 TOUT vendre","Sortir du marché, tout en liquide");
+  if(e.cash>SIM_MENSUEL*2) h+=btn("investirTout","🌊 Investir tout mon liquide ("+fmtEUR(e.cash,0)+")","Revenir (ou renforcer) massivement");
+  return h;
+}
+function decisionSimulation(action){
+  const e=simEtat().enCours; if(!e) return;
+  const sim=SIMULATIONS.find(s=>s.id===e.id), cours=sim.valeurs[e.mois];
+  // L'épargne du mois arrive, puis la décision s'applique au cours du mois courant.
+  if(action==="dca"){ e.parts+=SIM_MENSUEL/cours; }
+  else if(action==="renforcer"){ // le double = épargne du mois + autant pioché dans le liquide (si disponible)
+    const extra=Math.min(SIM_MENSUEL,e.cash);
+    e.parts+=(SIM_MENSUEL+extra)/cours; e.cash-=extra;
+  }
+  else if(action==="suspendre"){ e.cash+=SIM_MENSUEL; e.moisSansDCA++; }
+  else if(action==="vendreTout"){ e.cash+=e.parts*cours+SIM_MENSUEL; e.parts=0; e.ventesTotales++; e.moisSansDCA++; }
+  else if(action==="investirTout"){ e.cash+=SIM_MENSUEL; e.parts+=e.cash/cours; e.cash=0; e.rachats++; }
+  e.decisions.push({mois:e.mois,action:action,cours:cours});
+  e.mois++;
+  sauver();
+  if(e.mois>=sim.valeurs.length-1){ rendre(); window.scrollTo(0,0); }
+  else{ rendre(); }
+}
+function rendreFinSimulation(){
+  const e=simEtat().enCours;
+  const sim=SIMULATIONS.find(s=>s.id===e.id), v=sim.valeurs, dernier=v[v.length-1];
+  const n=v.length-1;
+  const vous=e.parts*dernier+e.cash;
+  // Référence 1 : DCA discipliné — la trajectoire EXACTE d'un joueur qui aurait
+  // choisi « verser comme prévu » à chaque mois, sans jamais dévier.
+  let partsDca=SIM_CAPITAL/v[0]; for(let m=0;m<n;m++) partsDca+=SIM_MENSUEL/v[m];
+  const dca=partsDca*dernier;
+  // Référence 2 : tout-liquide (jamais investi).
+  const cash=SIM_CAPITAL+SIM_MENSUEL*n;
+  const investi=SIM_CAPITAL+SIM_MENSUEL*n;
+  // Analyse comportementale locale.
+  const minV=Math.min(...v), notes=[];
+  e.decisions.filter(d=>d.action==="vendreTout").forEach(d=>{
+    if(d.cours<=minV*1.18) notes.push("🚨 Tu as tout vendu à "+fmtNb((d.cours/minV-1)*100,0)+" % du point le plus bas — la panique vend toujours au pire moment (leçon 17).");
+    else notes.push("↩️ Tu es sorti du marché au mois "+(d.mois+1)+". Sortir se décide en une seconde ; savoir QUAND revenir est le vrai problème.");
+  });
+  e.decisions.filter(d=>d.action==="investirTout").forEach(d=>{
+    const venteAvant=e.decisions.find(x=>x.action==="vendreTout"&&x.mois<d.mois);
+    if(venteAvant&&d.cours>venteAvant.cours) notes.push("💸 Tu as racheté PLUS CHER ("+fmtNb(d.cours,0)+") que ton prix de vente ("+fmtNb(venteAvant.cours,0)+") : l'aller-retour t'a appauvri — c'est le coût classique du market timing.");
+    if(venteAvant&&d.cours<venteAvant.cours) notes.push("🎩 Tu as racheté moins cher que ta vente — bien joué… mais sache que statistiquement, ce coup-là échoue bien plus souvent qu'il ne réussit.");
+  });
+  if(e.moisSansDCA>n*0.3) notes.push("⏸ Tu as suspendu ton épargne "+e.moisSansDCA+" mois sur "+n+" — souvent pendant les baisses, précisément quand tes versements achetaient le plus de parts (leçon 12).");
+  if(e.ventesTotales===0&&e.moisSansDCA<=2) notes.push("🏛️ Discipline remarquable : tu as traversé la tempête sans jamais abandonner le plan. C'est LA compétence — tout le reste s'apprend dans les livres.");
+  const battuDca=vous>=dca*0.995;
+  // Archivage.
+  simEtat().finies.push({id:e.id,mystere:e.mystere,date:new Date().toISOString(),vous:Math.round(vous),dca:Math.round(dca),cash:Math.round(cash)});
+  const decisionsResume=e.decisions.filter(d=>d.action!=="dca").map(d=>"mois "+(d.mois+1)+" : "+d.action+" (indice "+fmtNb(d.cours,0)+")").join(" ; ")||"DCA parfait du début à la fin";
+  journalAjouter({type:"etape",texte:"Simulation « "+(e.mystere?"mystère → "+sim.titre:sim.titre)+" » terminée : "+fmtEUR(vous,0)+" (DCA discipliné : "+fmtEUR(dca,0)+"). Écarts au plan : "+decisionsResume.slice(0,200)});
+  simEtat().enCours=null; sauver();
+  const ligne=(nom,val,star)=>'<div class="repLigne"><div class="repNom" style="width:150px">'+nom+'</div><div class="repBarre"><div class="repRemplie" style="width:'+Math.min(100,val/Math.max(vous,dca,cash)*100)+'%;background:'+(star?"var(--accent)":"#9CA3AF")+'"></div></div><div class="repPct" style="width:74px">'+fmtEUR(val,0)+"</div></div>";
+  return '<div class="centre mHaut"><div style="font-size:52px">'+(e.mystere?"❓→"+sim.emoji:sim.emoji)+'</div><h1>Voyage terminé !</h1><p class="sousTitre">'+(e.mystere?"Le mystère était : ":"")+ech(sim.titre)+" ("+ech(sim.periode)+")</p></div>"+
+  '<div class="carte"><div class="carteTitre"><span class="ico">🏁</span>Les comptes ('+fmtEUR(investi,0)+" versés)</div>"+
+  ligne("🧑 Toi",vous,true)+ligne("🤖 DCA discipliné",dca)+ligne("🛏️ Jamais investi",cash)+
+  '<div class="encart '+(battuDca?"succes":"info")+' mHaut8">'+(battuDca?"<b>Tu fais aussi bien ou mieux que la discipline pure.</b> Vérifie honnêtement (leçon 44) : compétence, ou chance de ce scénario ?":"<b>Le DCA discipliné t'a battu de "+fmtEUR(dca-vous,0)+".</b> C'est la leçon la plus chère et la plus utile du simulateur : la discipline mécanique bat presque toujours nos interventions.")+"</div></div>"+
+  (notes.length?'<div class="carte"><div class="carteTitre"><span class="ico">🔬</span>Ce que tes décisions racontent</div>'+notes.map(x=>"<p class='mHaut8'>"+x+"</p>").join("")+"</div>":"")+
+  '<div class="carte" style="border-left:4px solid var(--hausse)"><div class="carteTitre"><span class="ico">🎓</span>La leçon de cette époque</div><p>'+lierTermes(ech(sim.resume))+'</p><p class="petit mHaut8">Chaque traversée compte pour ton diplôme. Rejoue-la avec une autre stratégie : comparer ses propres parcours vaut tous les cours.</p></div>'+
+  ((S.cles.gemini||S.cles.claude)?'<div id="zoneDebriefSim"><button class="btn secondaire" onclick="debriefSimulation(\''+sim.id+'\',\''+ech(decisionsResume).replace(/'/g,"\\'")+'\','+Math.round(vous)+","+Math.round(dca)+')">🎓 Débrief de mon professeur</button></div>':"")+
+  '<button class="btn mHaut8" onclick="vueEcole=\'simulateur\';rendre()">Retour au simulateur</button>';
+}
+async function debriefSimulation(simId,resume,vous,dca){
+  const sim=SIMULATIONS.find(s=>s.id===simId);
+  const zone=$("#zoneDebriefSim");
+  zone.innerHTML='<div class="chargeur" style="padding:14px"><div class="chargeurAnneau"></div><p class="chargeurEtape">Ton professeur relit ta traversée…</p></div>';
+  try{
+    const texte=await appelIA(PROMPT_PROFESSEUR,construireContexte()+"\n\nMISSION : ton élève vient de terminer la SIMULATION HISTORIQUE « "+sim.titre+" ("+sim.periode+") » du simulateur d'époques (argent fictif, données mensuelles réelles approximatives). Il a fini avec "+vous+" € contre "+dca+" € pour la stratégie DCA disciplinée de référence. Ses écarts au plan : "+resume+". Débriefe sa traversée en 150-220 mots : ce que son comportement révèle (relie-le aux biais classiques et à ce qui s'est VRAIMENT passé durant cette période historique), ce qu'il doit retenir, et UNE question socratique pour finir. Texte libre, chaleureux, sans recherche nécessaire.",{recherche:false});
+    zone.innerHTML='<div class="carte" style="border-left:4px solid var(--accent)"><div class="carteTitre"><span class="ico">🎓</span>Le débrief de ton professeur</div>'+lierTermes(mdVersHtml(texte))+"</div>";
+  }catch(err){ zone.innerHTML='<div class="encart danger">'+ech(err.friendly?err.message:"Débrief impossible pour le moment.")+"</div>"; }
+}
+
+/* ============================================================
+   DÉFI DU MOIS — une vraie étude de cas par mois, notée par l'IA
+   ============================================================ */
+function defisEtat(){ if(!S.defis) S.defis={}; return S.defis; }
+function moisCourant(){ return aujourdhuiISO().slice(0,7); }
+function nbDefisNotes(){ return Object.values(defisEtat()).filter(d=>d.notation).length; }
+async function genererDefiDuMois(){
+  const zone=$("#zoneDefi");
+  if(zone) zone.innerHTML='<div class="chargeur" style="padding:14px"><div class="chargeurAnneau"></div><p class="chargeurEtape">Ton professeur prépare le défi du mois…</p></div>';
+  try{
+    const d=await appelIAJson(PROMPT_PROFESSEUR,construireContexte()+`\n\nMISSION : conçois le DÉFI DU MOIS de ton élève : une mission d'analyse concrète, réalisable en 2-3 heures étalées sur le mois, liée à l'ACTUALITÉ récente (utilise la recherche). Exemples de formats : analyser une entreprise dont on parle avec la méthode des 6 étapes ; comparer deux ETF ; décortiquer une chaîne causale d'actualité ; vérifier une affirmation entendue dans les médias. Adapte la difficulté à son niveau.\n\nRéponds UNIQUEMENT avec un objet JSON valide :\n{ "titre":"titre motivant du défi", "contexte":"pourquoi ce défi maintenant, lié à l'actualité (2-3 phrases, avec source)", "mission":"la mission précise, étape par étape", "livrable":"ce que l'élève doit écrire (sa « copie » de 10-20 lignes)", "criteres":["3 critères sur lesquels tu le noteras"] }`,{recherche:true});
+    defisEtat()[moisCourant()]={contenu:d,creeLe:new Date().toISOString(),copie:"",notation:null};
+    sauver(); rendre();
+  }catch(err){ if(zone) zone.innerHTML='<div class="encart danger">'+ech(err.friendly?err.message:"Génération impossible.")+'</div><button class="btn secondaire compact mHaut8" onclick="genererDefiDuMois()">Réessayer</button>'; }
+}
+function sheetCopieDefi(){
+  const defi=defisEtat()[moisCourant()]; if(!defi) return;
+  ouvrirSheet(titreSheet("Ma copie — "+defi.contenu.titre)+
+    '<p class="petit">'+ech(defi.contenu.livrable||"Rédige ton analyse.")+'</p>'+
+    '<textarea class="champ mHaut8" id="copieDefi" style="min-height:180px" placeholder="Ton analyse, avec tes mots…">'+ech(defi.copie||"")+'</textarea>'+
+    '<button class="btn mHaut" onclick="rendreCopieDefi()">Rendre ma copie au professeur 🎓</button>');
+}
+async function rendreCopieDefi(){
+  const defi=defisEtat()[moisCourant()]; if(!defi) return;
+  const copie=($("#copieDefi").value||"").trim();
+  if(copie.length<80){ toast("Développe un peu ta copie (au moins quelques lignes) — c'est l'effort qui forme !"); return; }
+  defi.copie=copie; sauver();
+  ouvrirSheet(titreSheet("Correction en cours…")+'<div class="chargeur"><div class="chargeurAnneau"></div><p class="chargeurEtape">Ton professeur corrige ta copie…</p></div>');
+  try{
+    const n=await appelIAJson(PROMPT_PROFESSEUR,construireContexte()+"\n\nMISSION : corrige la copie du DÉFI DU MOIS de ton élève, comme un professeur bienveillant mais exigeant. Vérifie ses affirmations avec la recherche si nécessaire.\n\nLE DÉFI : "+JSON.stringify(defi.contenu)+"\n\nSA COPIE : « "+copie+" »\n\nRéponds UNIQUEMENT avec un objet JSON valide :\n{ \"note_sur_20\":14, \"appreciation\":\"2-3 phrases d'appréciation générale\", \"points_forts\":[\"...\"], \"points_a_travailler\":[\"...\"], \"correction\":\"ce qu'une excellente copie aurait contenu, en 4-6 phrases\" }",{recherche:true});
+    defi.notation=n; defi.noteLe=new Date().toISOString(); sauver();
+    journalAjouter({type:"etape",texte:"Défi du mois « "+defi.contenu.titre+" » rendu : "+(n.note_sur_20!=null?n.note_sur_20+"/20":"corrigé")+"."});
+    ouvrirSheet(titreSheet("Ta correction 🎓")+
+      '<div class="centre"><div class="heroChiffre" style="font-size:40px">'+(n.note_sur_20!=null?ech(String(n.note_sur_20))+"<span style='font-size:20px'>/20</span>":"✓")+'</div></div>'+
+      "<p class='mHaut8'>"+lierTermes(ech(n.appreciation||""))+"</p>"+
+      '<div class="encart succes mHaut8"><b>Points forts :</b><br>'+(n.points_forts||[]).map(x=>"• "+lierTermes(ech(x))).join("<br>")+"</div>"+
+      '<div class="encart alerte"><b>À travailler :</b><br>'+(n.points_a_travailler||[]).map(x=>"• "+lierTermes(ech(x))).join("<br>")+"</div>"+
+      '<div class="carte plate"><b>La correction du professeur :</b><p class="mHaut8">'+lierTermes(ech(n.correction||""))+"</p></div>"+
+      '<button class="btn mHaut" onclick="fermerSheet();rendre()">Merci professeur ('+nbDefisNotes()+" défi"+(nbDefisNotes()>1?"s":"")+" noté"+(nbDefisNotes()>1?"s":"")+")</button>");
+  }catch(err){
+    ouvrirSheet(titreSheet("Copie enregistrée ✓")+'<p>Ta copie est sauvegardée, mais la correction a échoué : '+ech(err.friendly?err.message:"réessaie plus tard.")+'</p><button class="btn mHaut" onclick="fermerSheet();sheetCopieDefi()">Réessayer la correction</button>');
+  }
+  rendre();
+}
+
+/* ============================================================
+   DIPLÔME — Investisseur autonome MENTOR
+   Conditions : 50 leçons + 4 traversées du simulateur + 3 défis notés.
+   Un parcours qui, par construction, s'étale sur plusieurs mois.
+   ============================================================ */
+function conditionsDiplome(){
+  return [
+   {nom:"Valider les 50 leçons de l'École",fait:S.ecole.leconsValidees.length>=LECONS.length,detail:S.ecole.leconsValidees.length+" / "+LECONS.length,ico:"📚"},
+   {nom:"Traverser 4 époques au simulateur",fait:simEtat().finies.length>=4,detail:simEtat().finies.length+" / 4 voyages",ico:"🎬"},
+   {nom:"Rendre 3 défis du mois notés",fait:nbDefisNotes()>=3,detail:nbDefisNotes()+" / 3 défis (un par mois maximum)",ico:"📝"}
+  ];
+}
+function verifierDiplome(){
+  if(S.compteurs.diplomeLe) return true;
+  if(conditionsDiplome().every(c=>c.fait)){
+    S.compteurs.diplomeLe=new Date().toISOString();
+    journalAjouter({type:"etape",texte:"🏆 DIPLÔME « Investisseur autonome MENTOR » obtenu. Humble, discipliné, patient."});
+    sauver();
+    return true;
+  }
+  return false;
 }
 /* ============================================================
    ONGLET JOURNAL — thèses, décisions, post-mortems, parcours à jalons
