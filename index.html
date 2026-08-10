@@ -807,6 +807,8 @@ quiz:[
    NOYAU — état, persistance, utilitaires, composants UI
    ============================================================ */
 
+const VERSION_APP="1.6"; // affichée dans Profil → À propos : permet de vérifier
+                          // d'un coup d'œil que la dernière version est bien chargée
 /* ---- État par défaut (schéma versionné mentor_v1) ---- */
 function etatDefaut(){return {
   version:1,
@@ -2865,7 +2867,15 @@ function rendreProfil(){
   <select class="champ" onchange="S.reglages.voixIA=this.value;sauver()">${VOIX_IA.map(v=>'<option value="'+v.id+'"'+((S.reglages.voixIA||"Algieba")===v.id?" selected":"")+">"+ech(v.nom)+"</option>").join("")}</select>
   ${ttsEpuiseAujourdhui()?'<button class="btn secondaire compact mHaut8" onclick="delete S.reglages.ttsKoJour;sauver();toast(\'✨ Je retenterai la voix IA à la prochaine lecture\');rendre()">Retenter la voix IA</button>':""}`:`
   <label class="etiquette">Sa voix (téléphone)</label>
-  <select class="champ" onchange="S.reglages.voixLeo=this.value||undefined;sauver()"><option value="">Automatique (voix masculine douce)</option>${voixFrancaises().map(v=>'<option value="'+ech(v.name)+'"'+(S.reglages.voixLeo===v.name?" selected":"")+">"+ech(v.name)+"</option>").join("")}</select>
+  <select class="champ" onchange="S.reglages.voixLeoURI=this.value||undefined;S.reglages.voixLeo=undefined;sauver();if(this.value)testerVoixCourte()">
+    <option value="">Automatique (meilleure voix installée)</option>
+    ${voixFrancaises().slice().sort((a,b)=>scoreVoix(b)-scoreVoix(a)).map(v=>{
+      const u=(v.voiceURI||"").toLowerCase(), n=v.name.toLowerCase();
+      const badge=/premium/.test(n+u)?" ★ premium":/amélior|enhanced|qualité|quality/.test(n+u)?" ✦ qualité":/compact/.test(u)?" (compacte, robotique)":"";
+      return '<option value="'+ech(v.voiceURI||v.name)+'"'+(S.reglages.voixLeoURI===(v.voiceURI||v.name)?" selected":"")+">"+ech(v.name)+badge+"</option>";
+    }).join("")}
+  </select>
+  <p class="petit mHaut8">⚠️ Piège iOS : après avoir téléchargé une voix « qualité », DEUX voix du même nom apparaissent — choisis celle marquée <b>✦ qualité</b> ou <b>★ premium</b> (l'app te la lit dès la sélection pour vérifier).</p>
   <div class="encart alerte mHaut8">🎧 <b>La voix par défaut d'iOS sonne robotique ?</b> C'est la version « compacte ». Télécharge la version améliorée — 2 minutes, gratuit, et le jour et la nuit :<br>Réglages iOS → <b>Accessibilité</b> → <b>Contenu énoncé</b> → <b>Voix</b> → <b>Français</b> → <b>Thomas</b> → télécharge <b>« Thomas (amélioré) »</b> (ou une voix Premium). Léo la choisira automatiquement.</div>
   <label class="etiquette">Sa vitesse</label>
   <input type="range" min="0.7" max="1.2" step="0.05" value="${S.reglages.vitesseLeo||0.95}" style="width:100%;min-height:44px" onchange="S.reglages.vitesseLeo=+this.value;sauver()">`}
@@ -2882,9 +2892,21 @@ function rendreProfil(){
   ${rechercheEpuiseeAujourdhui()?'<button class="btn secondaire compact mHaut8" onclick="delete S.reglages.rechercheKoJour;sauver();toast(\'🔍 Je retenterai la recherche au prochain appel\');rendre()">Retenter la recherche maintenant</button>':""}</div>
 
   <div class="carte"><div class="carteTitre"><span class="ico">ℹ️</span>À propos</div>
-  <p><b>MENTOR</b> — ton professeur particulier de bourse. Version 1.</p>
+  <p><b>MENTOR</b> — ton professeur particulier de bourse. <span class="puce bleu">Version ${VERSION_APP}</span></p>
+  <p class="petit mHaut8">Après une mise à jour sur GitHub, l'app peut servir une fois l'ancienne version (cache hors-ligne). Si un nouveau réglage n'apparaît pas :</p>
+  <button class="btn secondaire compact mHaut8" onclick="forcerMiseAJour()">↻ Recharger la dernière version</button>
   <p class="petit mHaut8">Outil strictement pédagogique. <b>Ceci n'est pas un conseil en investissement</b> : MENTOR n'est pas agréé par l'AMF et ne fournit pas de service de conseil au sens réglementaire. Les contenus, briefings et idées générés par l'IA peuvent contenir des erreurs et ne constituent jamais une recommandation personnalisée d'achat ou de vente. <b>Investir comporte un risque de perte en capital.</b> L'application ne passe jamais d'ordres, ne se connecte à aucun compte, ne demande jamais d'identifiants bancaires ; elle ne stocke que des clés d'accès à des services de données et d'IA. Pour toute situation patrimoniale complexe, consulte un professionnel agréé.</p>
   <button class="btn danger mHaut" onclick="confirmerReinit()">🗑️ Tout effacer et recommencer</button></div>`;
+}
+/* Purge le cache du service worker puis recharge : garantit la dernière
+   version publiée sur GitHub Pages (les données mentor_v1 sont intactes). */
+async function forcerMiseAJour(){
+  toast("↻ Rechargement de la dernière version…");
+  try{
+    if("serviceWorker" in navigator){ const regs=await navigator.serviceWorker.getRegistrations(); for(const r of regs) await r.update(); }
+    if("caches" in window){ const cles=await caches.keys(); for(const k of cles) await caches.delete(k); }
+  }catch(e){}
+  setTimeout(()=>location.reload(),400);
 }
 function majMatelas(){
   S.profil.reponses.matelas="3-6 mois"; S.profil.modeProtege=false;
@@ -3038,22 +3060,30 @@ function voixFrancaises(){
   try{ return window.speechSynthesis.getVoices().filter(v=>(v.lang||"").toLowerCase().startsWith("fr")); }
   catch(e){ return []; }
 }
+function scoreVoix(v){
+  // Les voix « améliorées / premium » téléchargées sur iOS passent en priorité :
+  // elles sont infiniment plus naturelles que les voix compactes par défaut.
+  const n=v.name.toLowerCase(), u=(v.voiceURI||"").toLowerCase();
+  let s=0;
+  if(/premium/.test(n+u)) s+=40; if(/amélior|enhanced|qualité|quality/.test(n+u)) s+=30;
+  const prefs=["thomas","nicolas","daniel","paul","henri","google français"];
+  const ix=prefs.findIndex(p=>n.includes(p)); if(ix>=0) s+=20-ix;
+  if(/compact/.test(u)) s-=15;
+  return s;
+}
 function voixDeLeo(){
   const voix=voixFrancaises();
   if(!voix.length) return null;
-  if(S.reglages.voixLeo){ const v=voix.find(x=>x.name===S.reglages.voixLeo); if(v) return v; }
-  // Les voix « améliorées / premium » téléchargées sur iOS passent en priorité :
-  // elles sont infiniment plus naturelles que les voix compactes par défaut.
-  const score=(v)=>{
-    const n=v.name.toLowerCase(), u=(v.voiceURI||"").toLowerCase();
-    let s=0;
-    if(/premium/.test(n+u)) s+=40; if(/amélior|enhanced/.test(n+u)) s+=30;
-    const prefs=["thomas","nicolas","daniel","paul","henri","google français"];
-    const ix=prefs.findIndex(p=>n.includes(p)); if(ix>=0) s+=20-ix;
-    if(/compact/.test(u)) s-=15;
-    return s;
-  };
-  return voix.slice().sort((a,b)=>score(b)-score(a))[0];
+  // 1. Choix mémorisé par identifiant unique (voiceURI) — fiable.
+  if(S.reglages.voixLeoURI){ const v=voix.find(x=>x.voiceURI===S.reglages.voixLeoURI); if(v) return v; }
+  // 2. Ancien choix par nom : PIÈGE iOS — la voix compacte et la voix
+  //    « qualité » portent le MÊME nom (ex. deux « Audrey »). On prend
+  //    la meilleure des homonymes, jamais la première venue.
+  if(S.reglages.voixLeo){
+    const memesNom=voix.filter(x=>x.name===S.reglages.voixLeo);
+    if(memesNom.length) return memesNom.sort((a,b)=>scoreVoix(b)-scoreVoix(a))[0];
+  }
+  return voix.slice().sort((a,b)=>scoreVoix(b)-scoreVoix(a))[0];
 }
 // iOS charge les voix en différé : on écoute l'événement pour être prêt.
 if("speechSynthesis" in window){ try{ window.speechSynthesis.onvoiceschanged=()=>{}; }catch(e){} }
@@ -3108,7 +3138,9 @@ function parlerChunkSuivant(){
   try{ const v=voixDeLeo(); if(v) u.voice=v; }catch(e){} // certains navigateurs refusent l'affectation : la langue suffit alors
   u.lang="fr-FR";
   u.rate=S.reglages.vitesseLeo||0.95;  // légèrement ralenti : voix posée de professeur
-  u.pitch=0.9;                          // un peu plus grave : douceur
+  // pitch neutre : sur iOS, modifier la hauteur peut dégrader certaines voix
+  // « qualité » vers un rendu synthétique — on n'y touche plus.
+  u.pitch=1;
   u.onend=()=>{ if(!_lecActif) return; _lecIndex++; parlerChunkSuivant(); };
   u.onerror=()=>{ if(_lecActif) arreterLecture(); };
   try{ window.speechSynthesis.speak(u); }catch(e){ arreterLecture(); }
@@ -3183,6 +3215,17 @@ function injecterLecteurs(){
   obs.observe(document.getElementById("sheet"),{childList:true,subtree:true});
 })();
 
+/* Essai court immédiat après un changement de voix : on entend TOUT DE SUITE
+   si la voix choisie est la bonne (et pas son homonyme robotique). */
+function testerVoixCourte(){
+  try{
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance("Bonjour ! Voici ma nouvelle voix. Elle te plaît ?");
+    const v=voixDeLeo(); if(v) u.voice=v;
+    u.lang="fr-FR"; u.rate=S.reglages.vitesseLeo||0.95; u.pitch=1;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
 /* ---- Bouton d'essai pour l'écran Profil ---- */
 function testerVoixLeo(){
   arreterLecture();
