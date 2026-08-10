@@ -861,7 +861,7 @@ async function appelGeminiModele(modele,systeme,utilisateur,opts){
   };
   // Recherche Google intégrée : l'IA fait elle-même ses recherches d'actualité.
   if(opts.recherche!==false) corps.tools=[{google_search:{}}];
-  const rep=await fetchAvecBackoff(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(corps)},opts.surEtape);
+  const rep=await fetchAvecBackoff(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(corps)},opts.surEtape,opts.delais);
   const data=await rep.json();
   const parts=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts;
   const texte=(parts||[]).map(p=>p.text||"").join("");
@@ -881,7 +881,7 @@ async function appelClaude(systeme,utilisateur,opts){
   const rep=await fetchAvecBackoff("https://api.anthropic.com/v1/messages",{
     method:"POST",
     headers:{"Content-Type":"application/json","x-api-key":cle,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-    body:JSON.stringify(corps)},opts.surEtape);
+    body:JSON.stringify(corps)},opts.surEtape,opts.delais);
   const data=await rep.json();
   const texte=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
   if(!texte) throw new Error("Réponse vide de l'IA. Réessaie dans un instant.");
@@ -891,9 +891,12 @@ async function appelClaude(systeme,utilisateur,opts){
 function Erreur429Friendly(msg){ const e=new Error(msg); e.friendly=true; return e; }
 
 /* Backoff exponentiel sur 429/503 : 3 tentatives (2 s, 5 s, 12 s),
-   puis message vulgarisé — jamais d'erreur brute à l'écran. */
-async function fetchAvecBackoff(url,options,surEtape){
-  const delais=[2000,5000,12000];
+   puis message vulgarisé — jamais d'erreur brute à l'écran.
+   `delais` est paramétrable : les appels AVEC recherche Google n'insistent
+   pas (1 seule attente courte) car leur 429 vient presque toujours du quota
+   grounding, qui ne se libère pas en quelques secondes. */
+async function fetchAvecBackoff(url,options,surEtape,delais){
+  delais=delais||[2000,5000,12000];
   for(let t=0;t<=delais.length;t++){
     let rep;
     try{ rep=await fetch(url,options); }
@@ -905,7 +908,7 @@ async function fetchAvecBackoff(url,options,surEtape){
       continue;
     }
     const lancer=(msg)=>{ const e=new Erreur429Friendly(msg); e.statut=rep.status; throw e; };
-    if(rep.status===429) lancer("L'IA a atteint sa limite gratuite du moment. Ce n'est pas grave : réessaie dans quelques minutes.");
+    if(rep.status===429) lancer("L'IA a atteint sa limite gratuite du moment. Ce n'est pas grave : réessaie dans quelques minutes (si le quota du JOUR est épuisé, il se remet à zéro vers 9 h du matin, heure française).");
     if(rep.status===404) lancer("Le modèle d'IA demandé n'existe plus chez le fournisseur."); // intercepté par la bascule automatique de modèle
     if(rep.status===400||rep.status===401||rep.status===403){
       let det=""; try{ const j=await rep.json(); det=(j.error&&j.error.message)||""; }catch(e){}
@@ -917,10 +920,35 @@ async function fetchAvecBackoff(url,options,surEtape){
   }
 }
 
-/* Point d'entrée unique : bascule selon le fournisseur choisi. */
+/* Point d'entrée unique : bascule selon le fournisseur choisi.
+   DÉGRADATION GRACIEUSE DE LA RECHERCHE : sur le niveau gratuit de Gemini,
+   l'outil google_search a son propre quota, bien plus bas que celui de
+   l'IA (parfois zéro selon les comptes). Un 429 sur un appel AVEC recherche
+   vient donc presque toujours du grounding, pas du modèle. Dans ce cas :
+   on mémorise que la recherche est épuisée pour la journée et on relance
+   le même appel SANS recherche, en informant l'IA (et l'utilisateur) que
+   les informations peuvent dater. Nouvel essai automatique le lendemain. */
+let _derniereGenerationSansRecherche=false;
+function rechercheEpuiseeAujourdhui(){ return S.reglages.rechercheKoJour===aujourdhuiISO(); }
+const NOTE_SANS_RECHERCHE="\n\nNOTE TECHNIQUE IMPORTANTE : la recherche Google est indisponible pour cet appel (quota gratuit atteint). Appuie-toi uniquement sur tes connaissances générales : PRÉVIENS clairement ton élève que tu n'as pas accès à l'actualité du jour et que tes informations peuvent dater, ne prétends JAMAIS citer des nouvelles d'aujourd'hui, n'invente aucun cours de bourse ni aucune source, et si un cours de clôture t'est demandé (cloture_euronext), renvoie un tableau vide.";
 async function appelIA(systeme,utilisateur,opts){
+  opts=opts||{};
   if(!navigator.onLine) throw new Erreur429Friendly("Tu es hors connexion. Le briefing et le chat ont besoin d'internet — les leçons et ton journal restent disponibles.");
-  return S.cles.fournisseurIA==="claude"?appelClaude(systeme,utilisateur,opts):appelGemini(systeme,utilisateur,opts);
+  _derniereGenerationSansRecherche=false;
+  const fournisseur=(u,o)=>S.cles.fournisseurIA==="claude"?appelClaude(systeme,u,o):appelGemini(systeme,u,o);
+  const veutRecherche=opts.recherche!==false;
+  if(veutRecherche&&!rechercheEpuiseeAujourdhui()){
+    try{
+      // 1 seule attente courte : si le quota grounding est vide, insister ne sert à rien.
+      return await fournisseur(utilisateur,{...opts,recherche:true,delais:[2500]});
+    }catch(e){
+      if(e.statut!==429) throw e;
+      S.reglages.rechercheKoJour=aujourdhuiISO(); sauver();
+      if(opts.surEtape) opts.surEtape("Le quota gratuit de recherche Google est atteint — je continue sans elle");
+    }
+  }
+  if(veutRecherche){ _derniereGenerationSansRecherche=true; utilisateur+=NOTE_SANS_RECHERCHE; }
+  return fournisseur(utilisateur,{...opts,recherche:false});
 }
 
 /* ---------- Parsing JSON robuste (l'IA entoure parfois de ```json) ---------- */
@@ -1089,6 +1117,8 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format EXAC
 }
 Contraintes : 2 à 4 faits, 1 à 3 chaînes causales (c'est la signature du briefing : soigne le raisonnement), impact_positions couvre chaque position détenue, 1 à 3 idées TOUJOURS argumentées jamais impératives (l'action "attendre" est souvent la bonne). ${S.profil.phase===1?"Ton élève est en phase VIRTUELLE : formule les idées comme des exercices d'entraînement sur son portefeuille fictif.":""} ${S.profil.modeProtege?"Mode protégé actif : AUCUNE idée d'achat réel.":""}`;
   const b=await appelIAJson(PROMPT_PROFESSEUR,consigne,{recherche:true,surEtape:surEtape});
+  // Trace honnête : si la recherche était épuisée, le briefing l'affichera.
+  if(_derniereGenerationSansRecherche) b._sansRecherche=true;
   // Intégration des clôtures Euronext trouvées par l'IA (horodatées, modifiables à la main).
   (b.cloture_euronext||[]).forEach(c=>{
     if(c.ticker&&c.cloture){
@@ -1470,6 +1500,7 @@ async function lancerBriefing(){
 /* ---- Cartes du briefing, dans l'ordre imposé ---- */
 function rendreCartesBriefing(c,archive){
   let h="";
+  if(c._sansRecherche) h+='<div class="encart alerte">🔍 <b>Briefing généré sans la recherche Google</b> — son quota gratuit du jour est atteint (il se recharge vers 9 h du matin, heure française). Les informations peuvent dater et les clôtures Euronext n\'ont pas pu être vérifiées : prends ce briefing comme un cours, pas comme l\'actualité du jour.</div>';
   if(c.meteo) h+='<div class="carte" style="background:linear-gradient(135deg,#1E5A8A,#164569);color:#fff"><div class="carteTitre" style="color:rgba(255,255,255,.8)"><span class="ico">🌤️</span>Météo des marchés</div><p style="font-size:17px;font-weight:600">'+ech(c.meteo)+"</p></div>";
   // 1. Faits
   if((c.faits||[]).length){
@@ -2243,7 +2274,11 @@ function rendreProfil(){
   <div class="carte"><div class="carteTitre"><span class="ico">⚙️</span>Réglages</div>
   <label class="etiquette">Durée du cache des cours (minutes)</label>
   <select class="champ" onchange="S.reglages.cacheMinutes=+this.value;sauver()">${[5,15,30,60].map(m=>'<option value="'+m+'"'+(S.reglages.cacheMinutes===m?" selected":"")+">"+m+" min</option>").join("")}</select>
-  <p class="petit mHaut8">Un cache plus long économise ton quota gratuit Twelve Data (800 requêtes/jour). Pour un investisseur de long terme, 15 minutes sont déjà du luxe.</p></div>
+  <p class="petit mHaut8">Un cache plus long économise ton quota gratuit Twelve Data (800 requêtes/jour). Pour un investisseur de long terme, 15 minutes sont déjà du luxe.</p>
+  <div class="sep"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center"><span>Recherche Google (briefings)</span><span class="puce ${rechercheEpuiseeAujourdhui()?"ambre":"vert"}">${rechercheEpuiseeAujourdhui()?"quota atteint aujourd'hui":"active"}</span></div>
+  <p class="petit mHaut8">Sur le niveau gratuit de Gemini, la recherche a son propre quota, plus bas que celui de l'IA. Quand il est atteint, MENTOR continue automatiquement sans recherche (en te prévenant) et réessaie chaque jour.</p>
+  ${rechercheEpuiseeAujourdhui()?'<button class="btn secondaire compact mHaut8" onclick="delete S.reglages.rechercheKoJour;sauver();toast(\'🔍 Je retenterai la recherche au prochain appel\');rendre()">Retenter la recherche maintenant</button>':""}</div>
 
   <div class="carte"><div class="carteTitre"><span class="ico">ℹ️</span>À propos</div>
   <p><b>MENTOR</b> — ton professeur particulier de bourse. Version 1.</p>
