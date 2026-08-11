@@ -10,7 +10,7 @@
    ============================================================ */
 'use strict';
 
-const CACHE_NOM = 'mentor-coquille-v5'; // incrémenté à chaque livraison : purge l'ancienne version en cache
+const CACHE_NOM = 'mentor-coquille-v8'; // incrémenté à chaque livraison : purge l'ancienne version en cache
 const FICHIERS_COQUILLE = [
   './',
   './index.html',

@@ -807,12 +807,12 @@ quiz:[
    NOYAU — état, persistance, utilitaires, composants UI
    ============================================================ */
 
-const VERSION_APP="1.9"; // affichée dans Profil → À propos : permet de vérifier
+const VERSION_APP="1.12"; // affichée dans Profil → À propos : permet de vérifier
                           // d'un coup d'œil que la dernière version est bien chargée
 /* ---- État par défaut (schéma versionné mentor_v1) ---- */
 function etatDefaut(){return {
   version:1,
-  cles:{gemini:"",twelveData:"",fournisseurIA:"gemini",claude:""},
+  cles:{gemini:"",twelveData:"",fournisseurIA:"gemini",claude:"",elevenlabs:""},
   profil:{fait:false,phase:1,modeProtege:false,niveauMesure:0,reponses:{},creeLe:null},
   planDepart:null,
   positionsReelles:[],positionsVirtuelles:[],watchlist:[],
@@ -1170,7 +1170,16 @@ async function fetchAvecBackoff(url,options,surEtape,delais){
    le même appel SANS recherche, en informant l'IA (et l'utilisateur) que
    les informations peuvent dater. Nouvel essai automatique le lendemain. */
 let _derniereGenerationSansRecherche=false;
-function rechercheEpuiseeAujourdhui(){ return S.reglages.rechercheKoJour===aujourdhuiISO(); }
+/* Les quotas gratuits de Google se rechargent à MINUIT HEURE DE CALIFORNIE
+   (≈ 9 h du matin en France). Un blocage constaté à 8 h 47 doit donc être
+   levé dès 9 h — pas le lendemain. On compare les « jours californiens ». */
+function jourPacifique(d){
+  try{ return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles"}).format(d||new Date()); }
+  catch(e){ return (d||new Date()).toISOString().slice(0,10); }
+}
+function rechercheEpuiseeAujourdhui(){
+  return !!S.reglages.rechercheKoQuand&&jourPacifique(new Date(S.reglages.rechercheKoQuand))===jourPacifique();
+}
 const NOTE_SANS_RECHERCHE="\n\nNOTE TECHNIQUE IMPORTANTE : la recherche Google est indisponible pour cet appel (quota gratuit atteint). Appuie-toi uniquement sur tes connaissances générales : PRÉVIENS clairement ton élève que tu n'as pas accès à l'actualité du jour et que tes informations peuvent dater, ne prétends JAMAIS citer des nouvelles d'aujourd'hui, n'invente aucun cours de bourse ni aucune source, et si un cours de clôture t'est demandé (cloture_euronext), renvoie un tableau vide.";
 async function appelIA(systeme,utilisateur,opts){
   opts=opts||{};
@@ -1184,7 +1193,7 @@ async function appelIA(systeme,utilisateur,opts){
       return await fournisseur(utilisateur,{...opts,recherche:true,delais:[2500]});
     }catch(e){
       if(e.statut!==429) throw e;
-      S.reglages.rechercheKoJour=aujourdhuiISO(); sauver();
+      S.reglages.rechercheKoQuand=new Date().toISOString(); sauver();
       if(opts.surEtape) opts.surEtape("Le quota gratuit de recherche Google est atteint — je continue sans elle");
     }
   }
@@ -1288,10 +1297,14 @@ async function chercherSymbole(texte){
   const data=await tdRequete("/symbol_search",{symbol:texte,outputsize:8});
   return (data.data||[]).map(d=>({symbol:d.symbol,nom:d.instrument_name,bourse:d.exchange,devise:d.currency,pays:d.country}));
 }
-/* Symboles Euronext (plan gratuit Twelve Data : non couverts) :
-   les clôtures de veille sont récupérées par la recherche de l'IA au
-   moment du briefing (voir promptBriefing), horodatées « Clôture du JJ/MM ». */
-function estEuronext(p){ return p.marche==="euronext"||/\.(PA|AS|BR|LS)$/i.test(p.ticker); }
+/* Places européennes (plan gratuit Twelve Data : non couvertes) :
+   Paris .PA, Amsterdam .AS, Bruxelles .BR, Lisbonne .LS, mais aussi
+   Xetra/Francfort .DE .F, Düsseldorf .DU, Milan .MI, Madrid .MC,
+   Suisse .SW .VX, Londres .L, et places nordiques. Leurs clôtures de
+   veille sont récupérées par la recherche de l'IA au moment du briefing
+   (horodatées « Clôture du JJ/MM ») et corrigeables à la main. */
+function tickerEuropeen(t){ return /\.(PA|AS|BR|LS|DE|DU|F|MI|MC|SW|VX|L|IR|HE|ST|OL|CO|VI)$/i.test(String(t||"")); }
+function estEuronext(p){ return p.marche==="euronext"||tickerEuropeen(p.ticker); }
 function symbolesUS(){
   const tous=[...S.positionsReelles,...S.positionsVirtuelles,...S.watchlist];
   const set=new Set();
@@ -1343,7 +1356,7 @@ async function genererBriefing(surEtape){
   const consigne=`${construireContexte()}
 
 MISSION : rédige le BRIEFING DU JOUR de ton élève. Utilise la recherche Google pour l'actualité RÉELLE d'aujourd'hui et d'hier : macroéconomie (banques centrales, inflation, géopolitique), secteurs, et chacune des valeurs de son portefeuille et de sa watchlist. Cite tes sources.
-${tickersEuronext.length?"RECHERCHE OBLIGATOIRE : trouve le dernier cours de CLÔTURE Euronext Paris pour : "+tickersEuronext.join(", ")+". Renseigne-les dans cloture_euronext avec la date de cette clôture.":""}
+${tickersEuronext.length?"RECHERCHE OBLIGATOIRE : trouve le dernier cours de CLÔTURE (en euros ou devise locale) sur sa bourse européenne (Euronext Paris, Xetra, Milan…) pour chacune de ces valeurs : "+tickersEuronext.join(", ")+". Renseigne-les dans cloture_euronext avec la date de cette clôture.":""}
 
 Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format EXACT :
 {
@@ -1726,7 +1739,7 @@ function regenererBriefingDuJour(){
   const jour=aujourdhuiISO();
   S.briefings=S.briefings.filter(x=>x.date!==jour);
   S.journal=S.journal.filter(j=>!(j.type==="idee_ia"&&j.date.slice(0,10)===jour));
-  delete S.reglages.rechercheKoJour;
+  delete S.reglages.rechercheKoQuand;
   sauver();
   lancerBriefing();
 }
@@ -1984,7 +1997,7 @@ async function rechercherPourWatchlist(){
   }catch(e){ res.innerHTML='<div class="encart danger">'+ech(e.friendly?e.message:"Recherche impossible.")+"</div>"; }
 }
 function ajouterWatch(sym,nom,garderSheet){
-  S.watchlist.push({ticker:sym.toUpperCase(),nom:nom,marche:/\.(PA|AS|BR|LS)$/i.test(sym)?"euronext":"us"});
+  S.watchlist.push({ticker:sym.toUpperCase(),nom:nom,marche:tickerEuropeen(sym)?"euronext":"us"});
   sauver(); toast("👀 "+sym+" ajouté à ta watchlist");
   if(!garderSheet){ fermerSheet(); rendre(); }
   rafraichirCours(false).then(()=>{ if(!garderSheet) rendre(); }).catch(()=>{});
@@ -2004,20 +2017,25 @@ async function sheetPosition(vue,i){
   if(c) h+='<div class="centre"><div class="heroChiffre" style="font-size:32px">'+fmtNb(c.prix)+" "+(c.devise==="USD"?"$":"€")+'</div><div class="petit">'+(c.source==="twelvedata"?"Temps réel Twelve Data":"Clôture du "+fmtDateCourt(c.horodatage)+" (recherchée par l'IA — modifiable ci-dessous)")+"</div>"+(c.variation!=null?'<div class="'+clsVar(c.variation)+'">'+fmtPct(c.variation)+" aujourd'hui</div>":"")+"</div>";
   if(vue!=="watchlist") h+='<div class="carte plate"><p>'+p.quantite+" titres · PRU "+fmtNb(p.pru)+" "+(p.devise||"€")+" · acheté le "+fmtDate(p.dateAchat)+" · "+ech(p.courtier||"")+"</p>"+(pvp!=null?'<p class="'+clsVar(pvp)+'">Plus/moins-value latente : '+(pvp>=0?"+":"")+fmtEUR(pvp)+"</p>":"")+"</div>";
   h+='<div id="zoneGraph" class="carte plate centre petit">Graphique en chargement…</div>';
-  if(estEuronext(p)) h+='<label class="etiquette">Corriger le cours (clôture, en €)</label><div style="display:flex;gap:8px"><input class="champ" id="coursManuel" type="text" inputmode="decimal" value="'+(c?c.prix:"")+'"><button class="btn compact" onclick="corrigerCours(\''+ech(p.ticker)+'\')">OK</button></div>';
+  // Saisie manuelle du cours : pour toute valeur SANS source temps réel
+  // (bourses européennes, tickers exotiques hors plan gratuit Twelve Data…).
+  if(estEuronext(p)||!c||c.source!=="twelvedata"){
+    h+='<label class="etiquette">'+(c?"Corriger":"Saisir")+' le cours à la main ('+(estEuronext(p)?"€":"devise de cotation")+')</label><p class="petit">Utile quand aucune source automatique ne couvre cette valeur — regarde le cours sur ta plateforme et reporte-le ici.</p><div style="display:flex;gap:8px" class="mHaut8"><input class="champ" id="coursManuel" type="text" inputmode="decimal" value="'+(c?c.prix:"")+'" placeholder="ex. 9,84"><button class="btn compact" onclick="corrigerCours(\''+ech(p.ticker)+'\')">OK</button></div>';
+  }
   if(vue==="virtuel") h+='<button class="btn mHaut" onclick="fermerSheet();sheetDecisionVirtuelle(\''+ech(p.ticker)+'\')">🎯 Décision sur cette ligne</button>';
   h+='<button class="btn danger mHaut8" onclick="retirerLigne(\''+vue+"',"+i+')">'+(vue==="watchlist"?"Ne plus suivre":"Supprimer cette ligne")+"</button>";
   ouvrirSheet(h);
   // Graphique : Twelve Data pour les US ; pour Euronext on ne dispose que des clôtures du briefing.
   const zone=$("#zoneGraph");
-  if(estEuronext(p)){ zone.innerHTML='<p class="petit">📉 Historique indisponible pour Euronext sur le plan gratuit — le cours de clôture est mis à jour à chaque briefing.</p>'; return; }
+  if(estEuronext(p)){ zone.innerHTML='<p class="petit">📉 Historique indisponible pour les bourses européennes sur le plan gratuit — le cours de clôture est mis à jour à chaque briefing (et corrigeable ci-dessous).</p>'; return; }
   try{ const serie=await historique(p.ticker); zone.innerHTML=dessinerGraphique(serie)+'<div class="petit">30 derniers jours de clôture</div>'; }
   catch(e){ zone.innerHTML='<p class="petit">Graphique indisponible pour le moment ('+ech(e.friendly?e.message:"erreur")+")</p>"; }
 }
 function corrigerCours(ticker){
   const v=parseFloat(($("#coursManuel").value||"").replace(",","."));
   if(!v||v<=0){ toast("Indique un cours valide"); return; }
-  S.coursCache[ticker]={...(S.coursCache[ticker]||{}),prix:v,devise:"EUR",source:"manuel",horodatage:new Date().toISOString()};
+  const existant=S.coursCache[ticker]||{};
+  S.coursCache[ticker]={...existant,prix:v,devise:existant.devise||(tickerEuropeen(ticker)?"EUR":"USD"),source:"manuel",horodatage:new Date().toISOString()};
   sauver(); fermerSheet(); toast("✓ Cours corrigé"); rendre();
 }
 function retirerLigne(vue,i){
@@ -2055,7 +2073,7 @@ function validerPosition(type){
   const pru=parseFloat(($("#posPru").value||"").replace(",","."));
   if(!t||!q||q<=0||!pru||pru<=0){ toast("Ticker, quantité et prix de revient sont nécessaires"); return; }
   const courtier=document.querySelector("#segCourtier .actif").dataset.v;
-  const p={id:idUnique(),ticker:t,nom:($("#posNom").value||t).trim(),quantite:q,pru:pru,devise:/\.(PA|AS|BR|LS)$/i.test(t)?"EUR":"USD",courtier:courtier,dateAchat:$("#posDate").value||aujourdhuiISO(),marche:/\.(PA|AS|BR|LS)$/i.test(t)?"euronext":"us"};
+  const p={id:idUnique(),ticker:t,nom:($("#posNom").value||t).trim(),quantite:q,pru:pru,devise:tickerEuropeen(t)?"EUR":"USD",courtier:courtier,dateAchat:$("#posDate").value||aujourdhuiISO(),marche:tickerEuropeen(t)?"euronext":"us"};
   S.positionsReelles.push(p);
   journalAjouter({type:"decision_reelle",ticker:t,action:"acheter",quantite:q,coursAlors:pru+" "+p.devise,these:"Position réelle saisie ("+courtier+")"});
   // Première position réelle en phase 2 → passage automatique en phase 3 (croisière).
@@ -2669,7 +2687,7 @@ async function validerDecisionVirtuelle(){
   if(!t||!q||q<=0){ toast("Ticker et quantité sont nécessaires"); return; }
   if(!prix){ const c=S.coursCache[t]; if(c&&c.prix)prix=c.prix; }
   if(!prix){ toast("Indique le cours actuel (je ne le connais pas encore pour "+t+")"); return; }
-  const estEuro=/\.(PA|AS|BR|LS)$/i.test(t);
+  const estEuro=tickerEuropeen(t);
   const cout=enEUR(prix*q,estEuro?"EUR":"USD"); // liquidités fictives tenues en euros
   if(action!=="vendre"){
     if(cout>S.liquiditesVirtuelles+0.01){ toast("💸 Liquidités fictives insuffisantes ("+fmtEUR(S.liquiditesVirtuelles)+") — c'est déjà une leçon : on n'investit que ce qu'on a."); return; }
@@ -2882,13 +2900,22 @@ function rendreProfil(){
   <div style="display:flex;justify-content:space-between;align-items:center"><span>Boutons d'écoute sur les textes</span>
   <button class="btn compact ${S.reglages.lecteurActif!==false?"":"secondaire"}" onclick="S.reglages.lecteurActif=${S.reglages.lecteurActif!==false?"false":"true"};sauver();if(S.reglages.lecteurActif===false){arreterLecture();document.querySelectorAll('.btnLire').forEach(b=>b.remove());document.querySelectorAll('.aLecteur').forEach(x=>x.classList.remove('aLecteur'))}rendre()">${S.reglages.lecteurActif!==false?"Activé ✓":"Désactivé"}</button></div>
   <p class="petit mHaut8">Sur chaque texte, touche le petit portrait de Camille : le texte t'est lu à voix haute. Retouche-le pour mettre en pause.</p>
-  ${S.cles.gemini?`<label class="etiquette">Qualité de sa voix</label>
-  <div class="segments"><button class="${S.reglages.voixLeoMode!=="ia"?"actif":""}" onclick="S.reglages.voixLeoMode='locale';sauver();rendre()">📱 Téléphone</button><button class="${S.reglages.voixLeoMode==="ia"?"actif":""}" onclick="S.reglages.voixLeoMode='ia';sauver();rendre()">✨ IA (naturelle)</button></div>`:""}
-  ${S.reglages.voixLeoMode==="ia"&&S.cles.gemini?`
-  <div class="encart info">✨ <b>Voix IA Gemini</b> : une vraie voix naturelle, générée par ta clé. Le niveau gratuit ne permet que <b>quelques lectures par jour</b> — quand le quota est atteint${ttsEpuiseAujourdhui()?" <b>(c'est le cas aujourd'hui)</b>":""}, Camille repasse automatiquement sur la voix du téléphone.</div>
+  <label class="etiquette">Qualité de sa voix</label>
+  <div class="segments"><button class="${modeVoix()==="locale"?"actif":""}" onclick="S.reglages.voixLeoMode='locale';sauver();rendre()">📱 Téléphone</button><button class="${modeVoix()==="ia"?"actif":""}" onclick="S.reglages.voixLeoMode='ia';sauver();rendre()">✨ Gemini</button><button class="${modeVoix()==="xi"?"actif":""}" onclick="S.reglages.voixLeoMode='xi';sauver();rendre()">🎙️ ElevenLabs</button></div>
+  ${modeVoix()==="xi"?`
+  <div class="encart info">🎙️ <b>ElevenLabs</b> : la référence mondiale des voix naturelles — la plus belle façon de parler qu'on puisse intégrer. Clé gratuite (~10 000 caractères/mois, soit ≈ 10 minutes de lecture), démarrage bien plus rapide que Gemini. Quota atteint${ttsEpuiseAujourdhui()?" <b>(c'est le cas aujourd'hui)</b>":""} → retour automatique à la voix du téléphone.</div>
+  <label class="etiquette">Clé ElevenLabs</label>
+  <input class="champ" type="text" autocapitalize="none" autocomplete="off" placeholder="xi-…" value="${ech(S.cles.elevenlabs||"")}" onchange="S.cles.elevenlabs=this.value.trim();sauver()">
+  <button class="btn secondaire compact mHaut8" onclick="window.open('https://elevenlabs.io/app/settings/api-keys','_blank')">Obtenir une clé gratuite ↗</button>
+  <button class="btn compact mHaut8" onclick="chargerVoixXI()">Tester la clé et charger les voix</button>
+  <div id="zoneVoixXI" class="mHaut8">${_voixXIListe?'<label class="etiquette">Sa voix</label><select class="champ" onchange="S.reglages.voixXI=this.value;sauver();testerVoixLeo()">'+_voixXIListe.map(v=>'<option value="'+ech(v.id)+'"'+(S.reglages.voixXI===v.id?" selected":"")+">"+ech(v.nom)+"</option>").join("")+"</select>":'<p class="petit">Voix par défaut : George (homme, multilingue). Charge la liste pour en choisir une autre — beaucoup de voix femmes et hommes magnifiques en français.</p>'}</div>
+  ${ttsEpuiseAujourdhui()?'<button class="btn secondaire compact mHaut8" onclick="delete S.reglages.xiKoQuand;sauver();toast(\'🎙️ Je retenterai ElevenLabs à la prochaine lecture\');rendre()">Retenter ElevenLabs</button>':""}`:""}
+  ${modeVoix()==="ia"&&S.cles.gemini?`
+  <div class="encart info">✨ <b>Voix IA Gemini</b> : voix naturelle générée par ta clé. Quota gratuit serré (<b>quelques lectures par jour</b>, démarrage en 5-15 s)${ttsEpuiseAujourdhui()?" — <b>quota atteint aujourd'hui</b>":""} → repli automatique sur la voix du téléphone. 💡 Pour une voix plus rapide et encore plus belle, essaie l'onglet ElevenLabs.</div>
   <label class="etiquette">Son timbre</label>
   <select class="champ" onchange="S.reglages.voixIA=this.value;sauver()">${VOIX_IA.map(v=>'<option value="'+v.id+'"'+((S.reglages.voixIA||"Algieba")===v.id?" selected":"")+">"+ech(v.nom)+"</option>").join("")}</select>
-  ${ttsEpuiseAujourdhui()?'<button class="btn secondaire compact mHaut8" onclick="delete S.reglages.ttsKoJour;sauver();toast(\'✨ Je retenterai la voix IA à la prochaine lecture\');rendre()">Retenter la voix IA</button>':""}`:`
+  ${ttsEpuiseAujourdhui()?'<button class="btn secondaire compact mHaut8" onclick="delete S.reglages.ttsKoQuand;sauver();toast(\'✨ Je retenterai la voix IA à la prochaine lecture\');rendre()">Retenter la voix IA</button>':""}`:""}
+  ${modeVoix()==="locale"||(!S.cles.gemini&&modeVoix()==="ia")?`
   <label class="etiquette">Sa voix (téléphone)</label>
   <select class="champ" onchange="S.reglages.voixLeoURI=this.value||undefined;S.reglages.voixLeo=undefined;sauver();if(this.value)testerVoixCourte()">
     <option value="">Automatique (meilleure voix installée)</option>
@@ -2903,7 +2930,7 @@ function rendreProfil(){
   <p class="petit mHaut8">Une voix téléchargée n'apparaît pas ? iOS ne la révèle parfois qu'après avoir fermé COMPLÈTEMENT l'app (balayer hors du sélecteur) et rouvert — voire après un redémarrage du téléphone.</p>
   <div class="encart alerte mHaut8">🎧 <b>La voix par défaut d'iOS sonne robotique ?</b> C'est la version « compacte ». Télécharge la version améliorée — 2 minutes, gratuit, et le jour et la nuit :<br>Réglages iOS → <b>Accessibilité</b> → <b>Contenu énoncé</b> → <b>Voix</b> → <b>Français</b> → choisis <b>Thomas</b> (voix d'homme) ou <b>Audrey</b> (voix de femme) → télécharge la version <b>« améliorée »</b> ou <b>Premium</b>. Camille la choisira automatiquement.</div>
   <label class="etiquette">Sa vitesse</label>
-  <input type="range" min="0.7" max="1.2" step="0.05" value="${S.reglages.vitesseLeo||0.95}" style="width:100%;min-height:44px" onchange="S.reglages.vitesseLeo=+this.value;sauver()">`}
+  <input type="range" min="0.7" max="1.2" step="0.05" value="${S.reglages.vitesseLeo||0.95}" style="width:100%;min-height:44px" onchange="S.reglages.vitesseLeo=+this.value;sauver()">`:""}
   <button class="btn secondaire mHaut8" onclick="testerVoixLeo()">🔊 Écouter Camille se présenter</button>`:
   '<p class="petit">La synthèse vocale n\'est pas disponible sur cet appareil.</p>'}</div>
 
@@ -2912,9 +2939,9 @@ function rendreProfil(){
   <select class="champ" onchange="S.reglages.cacheMinutes=+this.value;sauver()">${[5,15,30,60].map(m=>'<option value="'+m+'"'+(S.reglages.cacheMinutes===m?" selected":"")+">"+m+" min</option>").join("")}</select>
   <p class="petit mHaut8">Un cache plus long économise ton quota gratuit Twelve Data (800 requêtes/jour). Pour un investisseur de long terme, 15 minutes sont déjà du luxe.</p>
   <div class="sep"></div>
-  <div style="display:flex;justify-content:space-between;align-items:center"><span>Recherche Google (briefings)</span><span class="puce ${rechercheEpuiseeAujourdhui()?"ambre":"vert"}">${rechercheEpuiseeAujourdhui()?"quota atteint aujourd'hui":"active"}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center"><span>Recherche Google (briefings)</span><span class="puce ${rechercheEpuiseeAujourdhui()?"ambre":"vert"}">${rechercheEpuiseeAujourdhui()?"quota atteint — retour vers 9 h":"active"}</span></div>
   <p class="petit mHaut8">Sur le niveau gratuit de Gemini, la recherche a son propre quota, plus bas que celui de l'IA. Quand il est atteint, MENTOR continue automatiquement sans recherche (en te prévenant) et réessaie chaque jour.</p>
-  ${rechercheEpuiseeAujourdhui()?'<button class="btn secondaire compact mHaut8" onclick="delete S.reglages.rechercheKoJour;sauver();toast(\'🔍 Je retenterai la recherche au prochain appel\');rendre()">Retenter la recherche maintenant</button>':""}</div>
+  ${rechercheEpuiseeAujourdhui()?'<button class="btn secondaire compact mHaut8" onclick="delete S.reglages.rechercheKoQuand;sauver();toast(\'🔍 Je retenterai la recherche au prochain appel\');rendre()">Retenter la recherche maintenant</button>':""}</div>
 
   <div class="carte"><div class="carteTitre"><span class="ico">ℹ️</span>À propos</div>
   <p><b>MENTOR</b> — ton professeur particulier de bourse. <span class="puce bleu">Version ${VERSION_APP}</span></p>
@@ -2922,6 +2949,17 @@ function rendreProfil(){
   <button class="btn secondaire compact mHaut8" onclick="forcerMiseAJour()">↻ Recharger la dernière version</button>
   <p class="petit mHaut8">Outil strictement pédagogique. <b>Ceci n'est pas un conseil en investissement</b> : MENTOR n'est pas agréé par l'AMF et ne fournit pas de service de conseil au sens réglementaire. Les contenus, briefings et idées générés par l'IA peuvent contenir des erreurs et ne constituent jamais une recommandation personnalisée d'achat ou de vente. <b>Investir comporte un risque de perte en capital.</b> L'application ne passe jamais d'ordres, ne se connecte à aucun compte, ne demande jamais d'identifiants bancaires ; elle ne stocke que des clés d'accès à des services de données et d'IA. Pour toute situation patrimoniale complexe, consulte un professionnel agréé.</p>
   <button class="btn danger mHaut" onclick="confirmerReinit()">🗑️ Tout effacer et recommencer</button></div>`;
+}
+/* Teste la clé ElevenLabs et charge la liste des voix du compte. */
+async function chargerVoixXI(){
+  if(!(S.cles.elevenlabs||"").trim()){ toast("Colle d'abord ta clé ElevenLabs."); return; }
+  const zone=$("#zoneVoixXI"); if(zone) zone.innerHTML='<p class="petit">Vérification de la clé et chargement des voix…</p>';
+  try{
+    const voix=await listerVoixXI();
+    delete S.reglages.xiKoQuand; sauver();
+    toast("🎙️ Clé valide — "+voix.length+" voix disponibles !");
+    rendre();
+  }catch(e){ if(zone) zone.innerHTML='<div class="encart danger">✗ '+ech(e.message||"Échec — vérifie la clé.")+"</div>"; }
 }
 /* Purge le cache du service worker puis recharge : garantit la dernière
    version publiée sur GitHub Pages (les données mentor_v1 sont intactes). */
@@ -3076,6 +3114,8 @@ function appliquerRestauration(mode){
 const AVATAR_LEO='<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="34" r="26" fill="#F2D5B8"/><path d="M10 30 Q12 12 32 10 Q52 12 54 30 L54 26 Q54 8 32 6 Q10 8 10 26 Z" fill="#6B7280"/><rect x="6" y="26" width="52" height="5" rx="2.5" fill="#1E5A8A"/><rect x="22" y="4" width="20" height="8" rx="2" fill="#1E5A8A"/><circle cx="22" cy="34" r="6.5" fill="none" stroke="#1F2937" stroke-width="2"/><circle cx="42" cy="34" r="6.5" fill="none" stroke="#1F2937" stroke-width="2"/><line x1="28.5" y1="34" x2="35.5" y2="34" stroke="#1F2937" stroke-width="2"/><circle cx="22" cy="34" r="2" fill="#1F2937"/><circle cx="42" cy="34" r="2" fill="#1F2937"/><path d="M24 46 Q32 50 40 46" fill="none" stroke="#B0655A" stroke-width="2.5" stroke-linecap="round" class="boucheLeo"/></svg>';
 
 let _lecChunks=[],_lecIndex=0,_lecActif=false,_lecPause=false,_lecBloc=null,_lecTitre="",_lecViaIA=false;
+let _lecJeton=0;   // jeton de session : toute nouvelle lecture invalide la précédente (anti double-voix)
+let _lecPrep=false; // vrai pendant la génération de l'audio distant (affiché dans la barre)
 
 function lecteurDispo(){ return ("speechSynthesis" in window)&&S.reglages.lecteurActif!==false; }
 
@@ -3158,18 +3198,21 @@ function lireBloc(bloc,ev){
   if(texte.length<3){ toast("Rien à lire ici."); return; }
   const titreEl=bloc.querySelector(".carteTitre,.dTitre,b,h1,h2,h3");
   _lecTitre=titreEl?texteVersParole(titreEl.textContent).slice(0,42):"ce passage";
-  // Voix IA (Gemini TTS) si activée et quota du jour intact ; sinon voix locale.
+  const jeton=++_lecJeton; // toute lecture précédente est invalidée à l'instant
+  _lecActif=true; _lecPause=false; _lecBloc=bloc; _lecPrep=false;
+  bloc.classList.add("enLecture");
+  // Voix distante (Gemini TTS ou ElevenLabs) si activée et quota intact ; sinon voix locale.
   if(typeof voixIAActive==="function"&&voixIAActive()&&!ttsEpuiseAujourdhui()&&navigator.onLine){
-    lireBlocIA(bloc,texte);
+    lireBlocIA(bloc,texte,jeton);
     return;
   }
-  _lecChunks=decouperEnPhrases(texte); _lecIndex=0; _lecActif=true; _lecPause=false; _lecBloc=bloc; _lecViaIA=false;
-  bloc.classList.add("enLecture");
+  _lecChunks=decouperEnPhrases(texte); _lecIndex=0; _lecViaIA=false;
   majBarreLecteur();
   parlerChunkSuivant();
 }
 function parlerChunkSuivant(){
   if(!_lecActif||_lecPause||_lecIndex>=_lecChunks.length){ if(_lecActif&&_lecIndex>=_lecChunks.length) arreterLecture(); return; }
+  const jeton=_lecJeton; // capture : si une autre lecture démarre, celle-ci se tait
   const u=new SpeechSynthesisUtterance(_lecChunks[_lecIndex]);
   try{ const v=voixDeLeo(); if(v) u.voice=v; }catch(e){} // certains navigateurs refusent l'affectation : la langue suffit alors
   u.lang="fr-FR";
@@ -3177,8 +3220,8 @@ function parlerChunkSuivant(){
   // pitch neutre : sur iOS, modifier la hauteur peut dégrader certaines voix
   // « qualité » vers un rendu synthétique — on n'y touche plus.
   u.pitch=1;
-  u.onend=()=>{ if(!_lecActif) return; _lecIndex++; parlerChunkSuivant(); };
-  u.onerror=()=>{ if(_lecActif) arreterLecture(); };
+  u.onend=()=>{ if(!_lecActif||jeton!==_lecJeton) return; _lecIndex++; parlerChunkSuivant(); };
+  u.onerror=()=>{ if(_lecActif&&jeton===_lecJeton) arreterLecture(); };
   try{ window.speechSynthesis.speak(u); }catch(e){ arreterLecture(); }
 }
 /* iOS gère mal pause/resume natifs → pause maison : on coupe et on retiendra
@@ -3193,7 +3236,8 @@ function basculerPauseLecture(){
   majBarreLecteur();
 }
 function arreterLecture(){
-  _lecActif=false; _lecPause=false; _lecChunks=[]; _lecIndex=0; _lecViaIA=false;
+  _lecJeton++; // invalide toute lecture en cours de préparation ou de jeu
+  _lecActif=false; _lecPause=false; _lecChunks=[]; _lecIndex=0; _lecViaIA=false; _lecPrep=false;
   try{ window.speechSynthesis.cancel(); }catch(e){}
   if(typeof _audioLeo!=="undefined"&&_audioLeo){ try{ _audioLeo.pause(); }catch(e){} _audioLeo=null; }
   if(_lecBloc){ _lecBloc.classList.remove("enLecture"); _lecBloc=null; }
@@ -3203,8 +3247,8 @@ function majBarreLecteur(){
   let barre=document.getElementById("lecteurBarre");
   if(!_lecActif){ if(barre) barre.remove(); return; }
   if(!barre){ barre=document.createElement("div"); barre.id="lecteurBarre"; document.body.appendChild(barre); }
-  barre.innerHTML='<span class="avatarLeo'+(_lecPause?"":" parle")+'">'+AVATAR_LEO+'</span>'+
-    '<div class="lecteurTexte"><b>Camille '+(_lecPause?"est en pause":"te lit")+'</b><span>'+ech(_lecTitre)+"…</span></div>"+
+  barre.innerHTML='<span class="avatarLeo'+(_lecPause||_lecPrep?"":" parle")+'">'+AVATAR_LEO+'</span>'+
+    '<div class="lecteurTexte"><b>Camille '+(_lecPause?"est en pause":_lecPrep?"prépare la lecture ⏳":"te lit")+'</b><span>'+(_lecPrep?"quelques secondes (voix naturelle)…":ech(_lecTitre)+"…")+"</span></div>"+
     '<button class="lecteurBtn" onclick="basculerPauseLecture()" aria-label="Pause / reprise">'+(_lecPause?"▶":"⏸")+"</button>"+
     '<button class="lecteurBtn" onclick="arreterLecture()" aria-label="Arrêter la lecture">✕</button>';
 }
@@ -3270,16 +3314,17 @@ function testerVoixLeo(){
   lireBloc(faux);
 }
 /* ============================================================
-   LÉO — VOIX IA (qualité naturelle, via la clé Gemini)
-   La synthèse locale d'iOS peut sonner robotique (surtout la
-   voix « compacte » par défaut). Ici : les modèles TTS de
-   Gemini, voix neuronales naturelles, pilotées par consigne
-   (« voix d'homme douce, calme, posée de professeur »).
-   Réalités du niveau gratuit : quota TTS restreint (quelques
-   lectures par jour) → gros morceaux (~1 300 caractères),
-   cache de session, et REPLI AUTOMATIQUE sur la voix locale
-   dès que le quota est atteint. L'audio arrive en PCM 16 bits
-   24 kHz : on l'emballe en WAV pour le lire nativement.
+   CAMILLE — VOIX DISTANTES (qualité naturelle)
+   Deux fournisseurs au choix, en plus de la voix du téléphone :
+   • Gemini TTS (clé déjà en place, quota gratuit serré)
+   • ElevenLabs (la référence des voix naturelles ; clé gratuite
+     ~10 000 caractères/mois, modèle multilingue superbe en français)
+   Robustesse : chaque lecture porte un JETON de session — toute
+   lecture lancée ensuite invalide l'ancienne (fini la double voix) ;
+   la barre affiche « prépare la lecture… » pendant la génération ;
+   le premier morceau est court (~350 car.) pour démarrer vite ;
+   délai maximal de 35 s par appel ; repli automatique sur la voix
+   du téléphone à la moindre panne ou quota atteint.
    ============================================================ */
 const VOIX_IA=[
  {id:"Algieba",genre:"homme",nom:"Homme — grave et soyeux (recommandé)"},
@@ -3296,10 +3341,22 @@ function consigneTTS(){
   const genre=v&&v.genre==="femme"?"de femme":"d'homme";
   return "Lis ce texte en français, d'une voix "+genre+" douce, calme et posée — le ton d'un professeur bienveillant qui prend son temps. Marque de courtes pauses entre les idées :\n\n";
 }
-let _audioLeo=null,_cacheAudio={};
+let _audioLeo=null,_cacheAudio={},_voixXIListe=null;
 
-function voixIAActive(){ return S.reglages.voixLeoMode==="ia"&&(S.cles.gemini||"").length>0; }
-function ttsEpuiseAujourdhui(){ return S.reglages.ttsKoJour===aujourdhuiISO(); }
+function modeVoix(){ return S.reglages.voixLeoMode||"locale"; }
+function voixIAActive(){
+  const m=modeVoix();
+  return (m==="ia"&&(S.cles.gemini||"").length>0)||(m==="xi"&&(S.cles.elevenlabs||"").length>0);
+}
+function ttsEpuiseAujourdhui(){
+  const quand=modeVoix()==="xi"?S.reglages.xiKoQuand:S.reglages.ttsKoQuand;
+  return !!quand&&jourPacifique(new Date(quand))===jourPacifique();
+}
+function marquerTtsEpuise(){
+  if(modeVoix()==="xi") S.reglages.xiKoQuand=new Date().toISOString();
+  else S.reglages.ttsKoQuand=new Date().toISOString();
+  sauver();
+}
 
 /* PCM 16 bits mono 24 kHz (base64) → blob WAV lisible par <audio>. */
 function pcmVersWav(b64,tauxEch){
@@ -3314,8 +3371,6 @@ function pcmVersWav(b64,tauxEch){
   for(let i=0;i<n;i++) dv.setUint8(44+i,bin.charCodeAt(i));
   return new Blob([buf],{type:"audio/wav"});
 }
-/* Cherche récursivement une longue chaîne base64 audio dans une réponse JSON
-   (robustesse : les formats varient selon les générations de modèles TTS). */
 function trouverAudioBase64(obj,prof){
   if(prof>8||obj==null) return null;
   if(typeof obj==="string") return (obj.length>2000&&/^[A-Za-z0-9+/=\s]+$/.test(obj.slice(0,200)))?obj.replace(/\s/g,""):null;
@@ -3323,9 +3378,15 @@ function trouverAudioBase64(obj,prof){
   for(const k of Object.keys(obj)){ const r=trouverAudioBase64(obj[k],(prof||0)+1); if(r) return r; }
   return null;
 }
-/* Appel TTS : d'abord la voie « generateContent » (format historique bien
-   connu), puis la voie « interactions » (générations récentes) si 404.
-   La voie qui répond est mémorisée. */
+/* fetch avec délai maximal : plus jamais d'attente infinie. */
+async function fetchDelai(url,options,ms){
+  const ctl=new AbortController();
+  const t=setTimeout(()=>ctl.abort(),ms||35000);
+  try{ return await fetch(url,{...options,signal:ctl.signal}); }
+  finally{ clearTimeout(t); }
+}
+
+/* ---- Fournisseur 1 : Gemini TTS ---- */
 async function ttsGemini(texte){
   const cle=S.cles.gemini, voix=S.reglages.voixIA||"Algieba";
   const voies=S.reglages.ttsVoie==="interactions"?["interactions","legacy"]:["legacy","interactions"];
@@ -3334,12 +3395,12 @@ async function ttsGemini(texte){
     try{
       let rep;
       if(voie==="legacy"){
-        rep=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+(S.reglages.modeleTTS||"gemini-2.5-flash-preview-tts")+":generateContent?key="+encodeURIComponent(cle),{
+        rep=await fetchDelai("https://generativelanguage.googleapis.com/v1beta/models/"+(S.reglages.modeleTTS||"gemini-2.5-flash-preview-tts")+":generateContent?key="+encodeURIComponent(cle),{
           method:"POST",headers:{"Content-Type":"application/json"},
           body:JSON.stringify({contents:[{parts:[{text:consigneTTS()+texte}]}],
             generationConfig:{responseModalities:["AUDIO"],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voix}}}}})});
       }else{
-        rep=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions?key="+encodeURIComponent(cle),{
+        rep=await fetchDelai("https://generativelanguage.googleapis.com/v1beta/interactions?key="+encodeURIComponent(cle),{
           method:"POST",headers:{"Content-Type":"application/json"},
           body:JSON.stringify({model:"gemini-3.1-flash-tts-preview",input:consigneTTS()+texte,
             response_format:{type:"audio"},generation_config:{speech_config:[{voice:voix}]}})});
@@ -3351,52 +3412,84 @@ async function ttsGemini(texte){
       if(!b64) throw new Error("pas d'audio dans la réponse");
       if(S.reglages.ttsVoie!==voie){ S.reglages.ttsVoie=voie; sauver(); }
       return URL.createObjectURL(pcmVersWav(b64));
-    }catch(e){
-      derniere=e;
-      if(e.statut===429) throw e;          // quota : inutile d'essayer l'autre voie
-      // 404 / format inattendu → on tente l'autre génération de l'API
-    }
+    }catch(e){ derniere=e; if(e.statut===429) throw e; }
   }
   throw derniere||new Error("TTS indisponible");
 }
-/* Découpage en gros morceaux (économie de quota). */
+/* ---- Fournisseur 2 : ElevenLabs (mp3 direct, latence bien plus faible) ---- */
+async function ttsElevenLabs(texte){
+  const voixId=S.reglages.voixXI||"JBFqnCBsd6RMkjVDRZzb"; // « George », voix homme multilingue par défaut
+  const rep=await fetchDelai("https://api.elevenlabs.io/v1/text-to-speech/"+encodeURIComponent(voixId)+"?output_format=mp3_44100_96",{
+    method:"POST",
+    headers:{"xi-api-key":S.cles.elevenlabs,"Content-Type":"application/json"},
+    body:JSON.stringify({text:texte,model_id:"eleven_multilingual_v2",voice_settings:{stability:0.55,similarity_boost:0.7,style:0.2}})});
+  if(rep.status===401||rep.status===429){
+    let quota=rep.status===429;
+    try{ const j=await rep.json(); quota=quota||/quota|limit/i.test(JSON.stringify(j.detail||"")); }catch(e){}
+    const err=new Error(quota?"quota":"clé"); err.statut=quota?429:401; throw err;
+  }
+  if(!rep.ok) throw new Error("http "+rep.status);
+  const blob=await rep.blob();
+  return URL.createObjectURL(blob);
+}
+async function listerVoixXI(){
+  const rep=await fetchDelai("https://api.elevenlabs.io/v1/voices",{headers:{"xi-api-key":S.cles.elevenlabs}},15000);
+  if(!rep.ok) throw new Error(rep.status===401?"Clé ElevenLabs invalide.":"Erreur "+rep.status);
+  const data=await rep.json();
+  _voixXIListe=(data.voices||[]).map(v=>({id:v.voice_id,nom:v.name+(v.labels&&v.labels.gender?" ("+(v.labels.gender==="female"?"femme":"homme")+")":"")}));
+  return _voixXIListe;
+}
+function ttsDistant(texte){ return modeVoix()==="xi"?ttsElevenLabs(texte):ttsGemini(texte); }
+
+/* Découpage : premier morceau COURT (démarrage rapide), suite en gros blocs. */
 function decouperGros(t,taille){
   taille=taille||1300;
   const phrases=t.match(/[^.!?]+[.!?]*/g)||[t];
-  const out=[]; let cour="";
-  for(const p of phrases){ if((cour+p).length>taille&&cour){ out.push(cour.trim()); cour=p; } else cour+=p; }
+  const out=[]; let cour="", cible=350; // premier morceau court
+  for(const p of phrases){
+    if((cour+p).length>cible&&cour){ out.push(cour.trim()); cour=p; cible=taille; }
+    else cour+=p;
+  }
   if(cour.trim()) out.push(cour.trim());
   return out;
 }
-/* Lecture IA d'un bloc : morceaux joués en chaîne, préchargement du suivant
-   pendant la lecture du courant. Toute erreur → repli local transparent. */
-async function lireBlocIA(bloc,texte){
-  _lecChunks=decouperGros(texte); _lecIndex=0; _lecActif=true; _lecPause=false; _lecBloc=bloc; _lecViaIA=true;
-  bloc.classList.add("enLecture"); majBarreLecteur();
-  const cacheCle=(i)=>_lecChunks[i].length+"|"+_lecChunks[i].slice(0,60);
-  const obtenir=async(i)=>{ const k=cacheCle(i); if(!_cacheAudio[k]) _cacheAudio[k]=ttsGemini(_lecChunks[i]); return _cacheAudio[k]; };
+
+/* ---- Lecture distante d'un bloc, sous jeton de session ----
+   Le jeton (posé par lireBloc) invalide instantanément cette lecture si
+   une autre démarre ou si l'utilisateur arrête : AUCUN chevauchement possible. */
+async function lireBlocIA(bloc,texte,jeton){
+  _lecChunks=decouperGros(texte); _lecIndex=0; _lecViaIA=true; _lecPrep=true;
+  majBarreLecteur();
+  const vif=()=>jeton===_lecJeton&&_lecActif;
+  const cacheCle=(i)=>modeVoix()+"|"+(S.reglages.voixXI||S.reglages.voixIA||"")+"|"+_lecChunks[i].length+"|"+_lecChunks[i].slice(0,60);
+  const obtenir=(i)=>{ const k=cacheCle(i); if(!_cacheAudio[k]) _cacheAudio[k]=ttsDistant(_lecChunks[i]).catch(e=>{ delete _cacheAudio[k]; throw e; }); return _cacheAudio[k]; };
   try{
-    let url=await obtenir(0);
-    const suivant=(i)=>{ if(i+1<_lecChunks.length) obtenir(i+1).catch(()=>{}); }; // préchargement
-    const jouer=(i,u)=>new Promise((res,rej)=>{
-      if(!_lecActif){ res(); return; }
-      _audioLeo=new Audio(u); _audioLeo.onended=()=>res(); _audioLeo.onerror=()=>rej(new Error("lecture audio"));
-      _audioLeo.play().then(()=>suivant(i)).catch(rej);
-    });
-    for(let i=0;i<_lecChunks.length&&_lecActif;i++){
-      _lecIndex=i; majBarreLecteur();
-      if(i>0) url=await obtenir(i);
-      await jouer(i,url);
-      while(_lecPause&&_lecActif) await new Promise(r=>setTimeout(r,250));
+    for(let i=0;i<_lecChunks.length;i++){
+      if(!vif()) return;
+      _lecIndex=i; _lecPrep=true; majBarreLecteur();
+      const url=await obtenir(i);
+      if(!vif()) return;
+      if(i+1<_lecChunks.length) obtenir(i+1).catch(()=>{});   // préchargement du suivant
+      while(_lecPause&&vif()) await new Promise(r=>setTimeout(r,200)); // pause posée pendant la préparation
+      if(!vif()) return;
+      _lecPrep=false; majBarreLecteur();
+      await new Promise((res,rej)=>{
+        _audioLeo=new Audio(url);
+        _audioLeo.onended=()=>res();
+        _audioLeo.onerror=()=>rej(new Error("lecture audio"));
+        _audioLeo.play().catch(rej);
+      });
+      while(_lecPause&&vif()) await new Promise(r=>setTimeout(r,200));
     }
-    if(_lecActif) arreterLecture();
+    if(vif()) arreterLecture();
   }catch(e){
-    // Repli : voix locale pour la suite, sans casser l'expérience.
-    if(e&&e.statut===429){ S.reglages.ttsKoJour=aujourdhuiISO(); sauver(); toast("🔊 Quota gratuit de la voix IA atteint pour aujourd'hui — je continue avec la voix du téléphone.",3600); }
-    else toast("🔊 Voix IA indisponible — je continue avec la voix du téléphone.",3000);
-    const resteTexte=_lecChunks.slice(_lecIndex).join(" ");
-    _lecViaIA=false;
-    if(_lecActif&&resteTexte){ _lecChunks=decouperEnPhrases(resteTexte); _lecIndex=0; parlerChunkSuivant(); }
+    if(!vif()) return; // une autre lecture a pris la main : on se retire en silence
+    if(e&&e.statut===429){ marquerTtsEpuise(); toast("🔊 Quota gratuit de la voix naturelle atteint — je continue avec la voix du téléphone.",3600); }
+    else if(e&&e.statut===401){ toast("🔊 Clé de la voix naturelle invalide (Profil → Camille) — voix du téléphone en attendant.",3600); }
+    else toast("🔊 Voix naturelle trop lente ou indisponible — je continue avec la voix du téléphone.",3000);
+    const reste=_lecChunks.slice(_lecIndex).join(" ");
+    _lecViaIA=false; _lecPrep=false;
+    if(vif()&&reste){ _lecChunks=decouperEnPhrases(reste); _lecIndex=0; majBarreLecteur(); parlerChunkSuivant(); }
     else arreterLecture();
   }
 }
