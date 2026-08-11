@@ -807,7 +807,7 @@ quiz:[
    NOYAU — état, persistance, utilitaires, composants UI
    ============================================================ */
 
-const VERSION_APP="1.13"; // affichée dans Profil → À propos : permet de vérifier
+const VERSION_APP="1.14"; // affichée dans Profil → À propos : permet de vérifier
                           // d'un coup d'œil que la dernière version est bien chargée
 /* ---- État par défaut (schéma versionné mentor_v1) ---- */
 function etatDefaut(){return {
@@ -2909,6 +2909,8 @@ function rendreProfil(){
   <button class="btn secondaire compact mHaut8" onclick="window.open('https://elevenlabs.io/app/settings/api-keys','_blank')">Obtenir une clé gratuite ↗</button>
   <button class="btn compact mHaut8" onclick="chargerVoixXI()">Tester la clé et charger les voix</button>
   <div id="zoneVoixXI" class="mHaut8">${_voixXIListe?'<label class="etiquette">Sa voix</label><select class="champ" onchange="S.reglages.voixXI=this.value;sauver();testerVoixLeo()">'+_voixXIListe.map(v=>'<option value="'+ech(v.id)+'"'+(S.reglages.voixXI===v.id?" selected":"")+">"+ech(v.nom)+"</option>").join("")+"</select>":'<p class="petit">Voix par défaut : George (homme, multilingue). Charge la liste pour en choisir une autre — beaucoup de voix femmes et hommes magnifiques en français.</p>'}</div>
+  <button class="btn compact secondaire mHaut8" onclick="diagnostiquerXI()">🔬 Diagnostic complet (teste tout et dit ce qui bloque)</button>
+  ${_voixDiag.length?'<div class="carte plate mHaut8" style="padding:10px"><b class="petit">Derniers événements voix :</b>'+_voixDiag.slice(0,6).map(l=>'<div class="minuscule">'+ech(l)+'</div>').join('')+'</div>':""}
   ${ttsEpuiseAujourdhui()?'<button class="btn secondaire compact mHaut8" onclick="delete S.reglages.xiKoQuand;sauver();toast(\'🎙️ Je retenterai ElevenLabs à la prochaine lecture\');rendre()">Retenter ElevenLabs</button>':""}`:""}
   ${modeVoix()==="ia"&&S.cles.gemini?`
   <div class="encart info">✨ <b>Voix IA Gemini</b> : voix naturelle générée par ta clé. Quota gratuit serré (<b>quelques lectures par jour</b>, démarrage en 5-15 s)${ttsEpuiseAujourdhui()?" — <b>quota atteint aujourd'hui</b>":""} → repli automatique sur la voix du téléphone. 💡 Pour une voix plus rapide et encore plus belle, essaie l'onglet ElevenLabs.</div>
@@ -3204,9 +3206,11 @@ function lireBloc(bloc,ev){
   // Voix distante (Gemini TTS ou ElevenLabs) si activée et quota intact ; sinon voix locale.
   if(typeof voixIAActive==="function"&&voixIAActive()&&!ttsEpuiseAujourdhui()&&navigator.onLine){
     debloquerAudio(); // pendant le tap : Safari autorisera l'audio qui arrivera dans quelques secondes
+    traceVoix("lecture "+modeVoix()+" demandée");
     lireBlocIA(bloc,texte,jeton);
     return;
   }
+  if(typeof traceVoix==="function") traceVoix("voix du téléphone (mode="+(S.reglages.voixLeoMode||"locale")+(typeof ttsEpuiseAujourdhui==="function"&&ttsEpuiseAujourdhui()?", quota distant atteint":"")+(navigator.onLine?"":", hors-ligne")+")");
   _lecChunks=decouperEnPhrases(texte); _lecIndex=0; _lecViaIA=false;
   majBarreLecteur();
   parlerChunkSuivant();
@@ -3462,6 +3466,46 @@ async function listerVoixXI(){
 }
 function ttsDistant(texte){ return modeVoix()==="xi"?ttsElevenLabs(texte):ttsGemini(texte); }
 
+/* ---- Journal de bord de la voix (diagnostic) ----
+   Chaque événement voix est tracé en mémoire : on sait TOUJOURS pourquoi
+   Camille a parlé avec telle voix, ou pourquoi elle a basculé. */
+let _voixDiag=[];
+function traceVoix(msg){ _voixDiag.unshift(new Date().toLocaleTimeString("fr-FR")+" — "+msg); if(_voixDiag.length>12)_voixDiag.pop(); }
+
+/* Diagnostic complet ElevenLabs, à lancer d'un tap : teste la chaîne entière
+   SUR l'appareil et affiche l'étape exacte qui échoue. */
+async function diagnostiquerXI(){
+  debloquerAudio(); // dans le geste : la lecture finale sera autorisée
+  const lignes=[];
+  const rendreDiag=(fini)=>{ ouvrirSheet(titreSheet("Diagnostic ElevenLabs 🔬")+lignes.map(l=>"<p class='mHaut8'>"+l+"</p>").join("")+(fini?'<button class="btn mHaut" onclick="fermerSheet()">Fermer</button>':'<p class="petit mHaut8">Test en cours…</p>')); };
+  // 1. Clé
+  if(!(S.cles.elevenlabs||"").trim()){ lignes.push("✗ <b>Étape 1 — Clé :</b> aucune clé enregistrée."); rendreDiag(true); return; }
+  lignes.push("✓ <b>Étape 1 — Clé :</b> présente ("+ech(S.cles.elevenlabs.slice(0,6))+"…)."); rendreDiag();
+  // 2. Liste des voix (GET)
+  try{ const v=await listerVoixXI(); lignes.push("✓ <b>Étape 2 — Connexion :</b> "+v.length+" voix reçues."); }
+  catch(e){ lignes.push("✗ <b>Étape 2 — Connexion :</b> "+ech(String(e.message||e))+(String(e).includes("fetch")?" (réseau/CORS ou bloqueur de contenu ?)":"")); rendreDiag(true); return; }
+  rendreDiag();
+  // 3. Génération d'un court audio (POST)
+  let url=null;
+  try{
+    const t0=Date.now();
+    url=await ttsElevenLabs("Bonjour, ceci est un test de la voix naturelle de Camille.");
+    lignes.push("✓ <b>Étape 3 — Génération :</b> audio reçu en "+((Date.now()-t0)/1000).toFixed(1)+" s.");
+  }catch(e){
+    const raison=e.statut===429?"quota mensuel épuisé (se recharge au renouvellement du mois ElevenLabs)":e.statut===401?"clé refusée pour la synthèse (vérifie que la clé a la permission « Text to Speech » sur elevenlabs.io)":String(e.name==="AbortError"?"délai dépassé (35 s)":e.message||e)+(String(e).includes("fetch")?" — réseau/CORS ou bloqueur de contenu":"");
+    lignes.push("✗ <b>Étape 3 — Génération :</b> "+ech(raison)); rendreDiag(true); return;
+  }
+  rendreDiag();
+  // 4. Lecture par le haut-parleur
+  try{
+    const a=elementAudio(); try{a.pause();}catch(e2){}
+    await new Promise((res,rej)=>{ a.onended=()=>res(); a.onerror=()=>rej(new Error("format audio illisible")); a.src=url; const p=a.play(); if(p&&p.catch)p.catch(e2=>rej(new Error(e2&&e2.name==="NotAllowedError"?"Safari a bloqué la lecture (autoplay)":String(e2)))); });
+    lignes.push("✓ <b>Étape 4 — Lecture :</b> tu viens de l'entendre ! Tout fonctionne — Camille utilisera cette voix.");
+    delete S.reglages.xiKoQuand; sauver();
+  }catch(e){ lignes.push("✗ <b>Étape 4 — Lecture :</b> "+ech(String(e.message||e))); }
+  rendreDiag(true);
+}
+
 /* Découpage : premier morceau COURT (démarrage rapide), suite en gros blocs. */
 function decouperGros(t,taille){
   taille=taille||1300;
@@ -3509,6 +3553,7 @@ async function lireBlocIA(bloc,texte,jeton){
     if(vif()) arreterLecture();
   }catch(e){
     if(!vif()) return; // une autre lecture a pris la main : on se retire en silence
+    traceVoix("échec "+modeVoix()+" : "+(e&&e.statut?("HTTP "+e.statut):(e&&e.autoplay?"autoplay bloqué":String(e&&e.message||e).slice(0,80))));
     if(e&&e.statut===429){ marquerTtsEpuise(); toast("🔊 Quota gratuit de la voix naturelle atteint — je continue avec la voix du téléphone.",3600); }
     else if(e&&e.statut===401){ toast("🔊 Clé de la voix naturelle invalide (Profil → Camille) — voix du téléphone en attendant.",3600); }
     else if(e&&e.autoplay){ toast("🔊 Safari a bloqué le son — retouche le bouton de Camille, ça partira du premier coup.",3600); }
