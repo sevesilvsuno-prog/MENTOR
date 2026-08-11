@@ -807,7 +807,7 @@ quiz:[
    NOYAU — état, persistance, utilitaires, composants UI
    ============================================================ */
 
-const VERSION_APP="1.7"; // affichée dans Profil → À propos : permet de vérifier
+const VERSION_APP="1.9"; // affichée dans Profil → À propos : permet de vérifier
                           // d'un coup d'œil que la dernière version est bien chargée
 /* ---- État par défaut (schéma versionné mentor_v1) ---- */
 function etatDefaut(){return {
@@ -1037,7 +1037,7 @@ function construireContexte(){
 - ${nomPhase(S.profil.phase)}.
 - Positions RÉELLES : ${resumePositions(S.positionsReelles)}.
 - Positions VIRTUELLES (entraînement, argent fictif ${fmtEUR(S.capitalVirtuel)}, liquidités fictives ${fmtEUR(S.liquiditesVirtuelles)}) : ${resumePositions(S.positionsVirtuelles)}.
-- Watchlist : ${S.watchlist.map(w=>w.ticker+" ("+w.nom+")").join(", ")||"vide"}.
+- Watchlist (avec les DERNIERS COURS RÉELS fournis par Twelve Data — fiables et à utiliser même si ta recherche Google est indisponible) : ${S.watchlist.map(w=>{const c=S.coursCache[w.ticker];return w.ticker+" ("+w.nom+(c&&c.prix?" : "+c.prix+" "+(c.devise||"")+(c.source==="twelvedata"?", temps réel"+(c.variation!=null?", "+fmtPct(c.variation)+" aujourd'hui":""):", clôture du "+fmtDateCourt(c.horodatage)):"")+")";}).join(" ; ")||"vide"}.
 - Journal des 7 derniers jours :
 ${journal7}
 - Leçons déjà validées à l'École : ${lecons}.
@@ -1422,7 +1422,11 @@ MISSION : ton élève vient d'étudier la leçon « ${lecon.titre} ». Utilise l
 
 /* ---- Chat libre (contexte intégralement reconstruit à chaque question) ---- */
 async function envoyerChat(question,historique,surEtape){
-  const consigne=construireContexte()+"\n\nTon élève te pose la question suivante. Réponds en texte libre, clair, avec tes règles de professeur (définitions, pour/contre, sources si recherche, jamais d'injonction). Question : "+question;
+  // Cours frais AVANT de répondre : même quand la recherche Google est épuisée,
+  // l'IA dispose ainsi des vrais cours US (Twelve Data) de la watchlist et des
+  // positions — elle n'est jamais aveugle sur la bourse elle-même.
+  if(S.cles.twelveData&&navigator.onLine){ try{ await rafraichirCours(false,surEtape); }catch(e){} }
+  const consigne=construireContexte()+"\n\nTon élève te pose la question suivante. Réponds en texte libre, clair, avec tes règles de professeur (définitions, pour/contre, sources si recherche, jamais d'injonction). Les cours indiqués dans le contexte (positions et watchlist) proviennent de Twelve Data et sont FIABLES : appuie-toi dessus. Question : "+question;
   return appelIA(PROMPT_PROFESSEUR,consigne,{recherche:true,historique:historique,surEtape:surEtape});
 }
 
@@ -1946,8 +1950,26 @@ function rendreWatchlist(){
     const c=coursDe(p);
     return '<button class="ligneListe" onclick="sheetPosition(\'watchlist\','+i+')"><div class="dPrincipal"><div class="dTitre">'+ech(p.ticker)+' <span class="petit">'+ech(p.nom||"")+'</span></div><div class="dSous">'+ech(p.pourquoi||(estEuronext(p)?"Euronext Paris":"Marché US"))+'</div></div><div style="text-align:right"><div style="font-weight:700">'+(c?fmtNb(c.prix)+" "+(c.devise==="USD"?"$":"€"):"—")+"</div>"+(c&&c.variation!=null?'<div class="'+clsVar(c.variation)+'" style="font-size:13px">'+fmtPct(c.variation)+"</div>":'<div class="petit">'+(c?"clôture "+fmtDateCourt(c.horodatage):"")+"</div>")+"</div></button>";
   }).join("")+"</div>";
-  h+='<button class="btn" onclick="sheetAjoutWatchlist()">＋ Suivre une valeur</button><button class="btn secondaire mHaut8" onclick="actualiserCours()">↻ Actualiser les cours</button>';
+  h+='<button class="btn" onclick="sheetAjoutWatchlist()">＋ Suivre une valeur</button>';
+  if(S.cles.gemini||S.cles.claude) h+='<button class="btn secondaire mHaut8" id="btnSuggWatch" onclick="suggererWatchlist()">✨ Me suggérer d\'autres valeurs à suivre</button>';
+  h+='<button class="btn secondaire mHaut8" onclick="actualiserCours()">↻ Actualiser les cours</button>';
+  h+='<p class="petit centre mHaut8">Une watchlist courte est un choix pédagogique : mieux vaut bien suivre 6 valeurs que survoler 30 — chaque briefing les analyse toutes. Agrandis-la à ton rythme.</p>';
   return h;
+}
+/* Suggestions IA supplémentaires : réutilise le prompt de départ,
+   en écartant les valeurs déjà suivies ou détenues. */
+async function suggererWatchlist(){
+  const btn=$("#btnSuggWatch"); if(btn){ btn.disabled=true; btn.textContent="✨ Je réfléchis à des valeurs intéressantes…"; }
+  try{
+    const w=await genererWatchlistDepart();
+    const dejaSuivis=new Set([...S.watchlist,...S.positionsReelles,...S.positionsVirtuelles].map(p=>p.ticker.toUpperCase()));
+    const nouvelles=(w.watchlist||[]).filter(v=>v.ticker&&!dejaSuivis.has(v.ticker.toUpperCase()));
+    if(!nouvelles.length){ toast("Rien de neuf à te proposer cette fois — réessaie un autre jour !"); rendre(); return; }
+    ouvrirSheet(titreSheet("Suggestions de ton professeur ✨")+
+      '<p class="petit">À suivre pour apprendre — pas des recommandations d\'achat. Touche celles qui t\'intéressent :</p>'+
+      nouvelles.map((v,i)=>'<button class="choix" id="sugg'+i+'" onclick="ajouterWatch(\''+ech(v.ticker.toUpperCase())+'\',\''+ech((v.nom||v.ticker).replace(/\'/g," "))+'\',true);this.classList.add(\'sel\');this.disabled=true"><b>'+ech(v.ticker.toUpperCase())+"</b> — "+ech(v.nom||"")+'<span class="sousChoix">'+ech(v.pourquoi_la_suivre||"")+"</span></button>").join("")+
+      '<button class="btn mHaut" onclick="fermerSheet();rendre()">Terminé</button>');
+  }catch(e){ toast("😕 "+(e.friendly?e.message:"Suggestion impossible pour le moment."),3500); rendre(); }
 }
 function sheetAjoutWatchlist(){
   ouvrirSheet(titreSheet("Suivre une valeur")+
@@ -1961,10 +1983,11 @@ async function rechercherPourWatchlist(){
     res.innerHTML=trouves.length?trouves.map(t=>'<button class="choix" onclick="ajouterWatch(\''+ech(t.symbol)+"','"+ech((t.nom||"").replace(/'/g," "))+'\')">'+ech(t.symbol)+" — "+ech(t.nom)+' <span class="sousChoix">'+ech(t.bourse)+" · "+ech(t.devise)+"</span></button>").join(""):'<p class="petit">Rien trouvé — vérifie l\'orthographe, ou utilise le champ « valeur française » ci-dessous.</p>';
   }catch(e){ res.innerHTML='<div class="encart danger">'+ech(e.friendly?e.message:"Recherche impossible.")+"</div>"; }
 }
-function ajouterWatch(sym,nom){
+function ajouterWatch(sym,nom,garderSheet){
   S.watchlist.push({ticker:sym.toUpperCase(),nom:nom,marche:/\.(PA|AS|BR|LS)$/i.test(sym)?"euronext":"us"});
-  sauver(); fermerSheet(); toast("👀 "+sym+" ajouté à ta watchlist"); rendre();
-  rafraichirCours(false).then(()=>rendre()).catch(()=>{});
+  sauver(); toast("👀 "+sym+" ajouté à ta watchlist");
+  if(!garderSheet){ fermerSheet(); rendre(); }
+  rafraichirCours(false).then(()=>{ if(!garderSheet) rendre(); }).catch(()=>{});
 }
 function ajouterWatchFR(){
   const t=($("#chWatchFR").value||"").trim().toUpperCase(); if(!t){toast("Indique le ticker (ex. MC.PA)");return;}
