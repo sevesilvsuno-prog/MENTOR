@@ -807,7 +807,7 @@ quiz:[
    NOYAU — état, persistance, utilitaires, composants UI
    ============================================================ */
 
-const VERSION_APP="1.12"; // affichée dans Profil → À propos : permet de vérifier
+const VERSION_APP="1.13"; // affichée dans Profil → À propos : permet de vérifier
                           // d'un coup d'œil que la dernière version est bien chargée
 /* ---- État par défaut (schéma versionné mentor_v1) ---- */
 function etatDefaut(){return {
@@ -3203,6 +3203,7 @@ function lireBloc(bloc,ev){
   bloc.classList.add("enLecture");
   // Voix distante (Gemini TTS ou ElevenLabs) si activée et quota intact ; sinon voix locale.
   if(typeof voixIAActive==="function"&&voixIAActive()&&!ttsEpuiseAujourdhui()&&navigator.onLine){
+    debloquerAudio(); // pendant le tap : Safari autorisera l'audio qui arrivera dans quelques secondes
     lireBlocIA(bloc,texte,jeton);
     return;
   }
@@ -3343,6 +3344,26 @@ function consigneTTS(){
 }
 let _audioLeo=null,_cacheAudio={},_voixXIListe=null;
 
+/* ---- Déblocage audio iOS ----
+   Safari n'autorise un son qu'en réaction DIRECTE à un tap. Or l'audio
+   distant arrive 1-3 s après (génération). Parade éprouvée : UN élément
+   <audio> persistant, « béni » pendant le tap en jouant un silence d'un
+   dixième de seconde — ensuite, changer sa source et rejouer est autorisé
+   même hors geste. Tout l'audio distant passe par cet élément unique
+   (bonus : le chevauchement de deux sons devient physiquement impossible). */
+let _audioEl=null,_silenceURL=null;
+function elementAudio(){ if(!_audioEl){ _audioEl=new Audio(); _audioEl.preload="auto"; } return _audioEl; }
+function debloquerAudio(){ // à appeler DANS le gestionnaire du tap
+  try{
+    const a=elementAudio();
+    if(a._debloque) return;
+    if(!_silenceURL) _silenceURL=URL.createObjectURL(pcmVersWav(btoa(String.fromCharCode.apply(null,new Uint8Array(2400))))); // 0,05 s de silence
+    a.src=_silenceURL;
+    const p=a.play(); if(p&&p.catch) p.catch(()=>{});
+    a._debloque=true;
+  }catch(e){}
+}
+
 function modeVoix(){ return S.reglages.voixLeoMode||"locale"; }
 function voixIAActive(){
   const m=modeVoix();
@@ -3474,10 +3495,14 @@ async function lireBlocIA(bloc,texte,jeton){
       if(!vif()) return;
       _lecPrep=false; majBarreLecteur();
       await new Promise((res,rej)=>{
-        _audioLeo=new Audio(url);
-        _audioLeo.onended=()=>res();
-        _audioLeo.onerror=()=>rej(new Error("lecture audio"));
-        _audioLeo.play().catch(rej);
+        const a=elementAudio();
+        try{ a.pause(); }catch(e2){}
+        _audioLeo=a;
+        a.onended=()=>res();
+        a.onerror=()=>rej(new Error("lecture audio"));
+        a.src=url;
+        const p=a.play();
+        if(p&&p.catch) p.catch(e2=>{ const err=new Error("autoplay"); err.autoplay=(e2&&e2.name==="NotAllowedError"); rej(err); });
       });
       while(_lecPause&&vif()) await new Promise(r=>setTimeout(r,200));
     }
@@ -3486,6 +3511,7 @@ async function lireBlocIA(bloc,texte,jeton){
     if(!vif()) return; // une autre lecture a pris la main : on se retire en silence
     if(e&&e.statut===429){ marquerTtsEpuise(); toast("🔊 Quota gratuit de la voix naturelle atteint — je continue avec la voix du téléphone.",3600); }
     else if(e&&e.statut===401){ toast("🔊 Clé de la voix naturelle invalide (Profil → Camille) — voix du téléphone en attendant.",3600); }
+    else if(e&&e.autoplay){ toast("🔊 Safari a bloqué le son — retouche le bouton de Camille, ça partira du premier coup.",3600); }
     else toast("🔊 Voix naturelle trop lente ou indisponible — je continue avec la voix du téléphone.",3000);
     const reste=_lecChunks.slice(_lecIndex).join(" ");
     _lecViaIA=false; _lecPrep=false;
