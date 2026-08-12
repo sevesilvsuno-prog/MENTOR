@@ -807,7 +807,7 @@ quiz:[
    NOYAU — état, persistance, utilitaires, composants UI
    ============================================================ */
 
-const VERSION_APP="1.14"; // affichée dans Profil → À propos : permet de vérifier
+const VERSION_APP="1.15"; // affichée dans Profil → À propos : permet de vérifier
                           // d'un coup d'œil que la dernière version est bien chargée
 /* ---- État par défaut (schéma versionné mentor_v1) ---- */
 function etatDefaut(){return {
@@ -1149,7 +1149,20 @@ async function fetchAvecBackoff(url,options,surEtape,delais){
       continue;
     }
     const lancer=(msg)=>{ const e=new Erreur429Friendly(msg); e.statut=rep.status; throw e; };
-    if(rep.status===429) lancer("L'IA a atteint sa limite gratuite du moment. Ce n'est pas grave : réessaie dans quelques minutes (si le quota du JOUR est épuisé, il se remet à zéro vers 9 h du matin, heure française).");
+    if(rep.status===429){
+      // On lit le corps de l'erreur : Google y précise QUEL quota est touché
+      // (par minute → simple embouteillage ; par jour → épuisé jusqu'à 9 h)
+      // et parfois un délai conseillé (RetryInfo.retryDelay, ex. "17s").
+      let det="",attendreSec=0;
+      try{
+        const j=await rep.json(); det=(j.error&&j.error.message)||"";
+        ((j.error&&j.error.details)||[]).forEach(d=>{
+          if(/RetryInfo/i.test(d["@type"]||"")&&d.retryDelay) attendreSec=parseFloat(d.retryDelay)||0;
+        });
+      }catch(e){}
+      const e429=new Erreur429Friendly("L'IA a atteint sa limite gratuite du moment. Ce n'est pas grave : réessaie dans quelques minutes (si le quota du JOUR est épuisé, il se remet à zéro vers 9 h du matin, heure française).");
+      e429.statut=429; e429.detail429=det; e429.attendreSec=attendreSec; throw e429;
+    }
     if(rep.status===404) lancer("Le modèle d'IA demandé n'existe plus chez le fournisseur."); // intercepté par la bascule automatique de modèle
     if(rep.status===400||rep.status===401||rep.status===403){
       let det=""; try{ const j=await rep.json(); det=(j.error&&j.error.message)||""; }catch(e){}
@@ -1188,13 +1201,34 @@ async function appelIA(systeme,utilisateur,opts){
   const fournisseur=(u,o)=>S.cles.fournisseurIA==="claude"?appelClaude(systeme,u,o):appelGemini(systeme,u,o);
   const veutRecherche=opts.recherche!==false;
   if(veutRecherche&&!rechercheEpuiseeAujourdhui()){
-    try{
-      // 1 seule attente courte : si le quota grounding est vide, insister ne sert à rien.
-      return await fournisseur(utilisateur,{...opts,recherche:true,delais:[2500]});
-    }catch(e){
-      if(e.statut!==429) throw e;
-      S.reglages.rechercheKoQuand=new Date().toISOString(); sauver();
-      if(opts.surEtape) opts.surEtape("Le quota gratuit de recherche Google est atteint — je continue sans elle");
+    for(let essai=0;essai<2;essai++){
+      try{
+        // 1 seule attente courte par essai : si le quota grounding est vide, insister ne sert à rien.
+        return await fournisseur(utilisateur,{...opts,recherche:true,delais:[2500]});
+      }catch(e){
+        if(e.statut!==429) throw e;
+        const det=e.detail429||"";
+        // Classification du refus : « par jour » = vraiment épuisé jusqu'à 9 h ;
+        // « par minute » (ou délai conseillé court) = simple embouteillage passager
+        // qui ne doit SURTOUT PAS bloquer la recherche pour toute la journée.
+        const parJour=/per.?day|daily/i.test(det);
+        const parMinute=!parJour&&(/minute/i.test(det)||(e.attendreSec>0&&e.attendreSec<=90));
+        if(parMinute&&essai===0){
+          const att=Math.min(Math.max(e.attendreSec||15,2),45);
+          if(opts.surEtape) opts.surEtape("L'IA a atteint sa limite par minute — nouvel essai avec la recherche dans "+Math.round(att)+" s…");
+          await new Promise(r=>setTimeout(r,att*1000));
+          continue;
+        }
+        if(!parMinute){
+          // Quota du jour (ou refus non précisé) : on mémorise jusqu'au prochain
+          // « jour californien » (~9 h en France), avec le détail pour diagnostic.
+          S.reglages.rechercheKoQuand=new Date().toISOString();
+          if(det) S.reglages.rechercheKoDetail=det.slice(0,300); else delete S.reglages.rechercheKoDetail;
+          sauver();
+        }
+        if(opts.surEtape) opts.surEtape("Le quota gratuit de recherche Google est atteint — je continue sans elle");
+        break;
+      }
     }
   }
   if(veutRecherche){ _derniereGenerationSansRecherche=true; utilisateur+=NOTE_SANS_RECHERCHE; }
@@ -1739,7 +1773,7 @@ function regenererBriefingDuJour(){
   const jour=aujourdhuiISO();
   S.briefings=S.briefings.filter(x=>x.date!==jour);
   S.journal=S.journal.filter(j=>!(j.type==="idee_ia"&&j.date.slice(0,10)===jour));
-  delete S.reglages.rechercheKoQuand;
+  delete S.reglages.rechercheKoQuand; delete S.reglages.rechercheKoDetail;
   sauver();
   lancerBriefing();
 }
@@ -1775,7 +1809,7 @@ async function lancerBriefing(){
 /* ---- Cartes du briefing, dans l'ordre imposé ---- */
 function rendreCartesBriefing(c,archive){
   let h="";
-  if(c._sansRecherche) h+='<div class="encart alerte">🔍 <b>Briefing généré sans la recherche Google</b> — son quota gratuit du jour est atteint (il se recharge vers 9 h du matin, heure française). Les informations peuvent dater et les clôtures Euronext n\'ont pas pu être vérifiées : prends ce briefing comme un cours, pas comme l\'actualité du jour.</div>';
+  if(c._sansRecherche) h+='<div class="encart alerte">🔍 <b>Briefing généré sans la recherche Google</b> — son quota gratuit était atteint au moment de la génération (il se recharge vers 9 h du matin, heure française). Les informations peuvent dater et les clôtures Euronext n\'ont pas pu être vérifiées : prends ce briefing comme un cours, pas comme l\'actualité du jour.'+(archive?"":'<br><button class="btn compact mHaut8" onclick="regenererBriefingDuJour()">↻ Réessayer maintenant avec l\'actualité</button>')+'</div>';
   if(c.meteo) h+='<div class="carte" style="background:linear-gradient(135deg,#1E5A8A,#164569);color:#fff"><div class="carteTitre" style="color:rgba(255,255,255,.8)"><span class="ico">🌤️</span>Météo des marchés</div><p style="font-size:17px;font-weight:600">'+ech(c.meteo)+"</p></div>";
   // 1. Faits
   if((c.faits||[]).length){
@@ -2943,7 +2977,8 @@ function rendreProfil(){
   <div class="sep"></div>
   <div style="display:flex;justify-content:space-between;align-items:center"><span>Recherche Google (briefings)</span><span class="puce ${rechercheEpuiseeAujourdhui()?"ambre":"vert"}">${rechercheEpuiseeAujourdhui()?"quota atteint — retour vers 9 h":"active"}</span></div>
   <p class="petit mHaut8">Sur le niveau gratuit de Gemini, la recherche a son propre quota, plus bas que celui de l'IA. Quand il est atteint, MENTOR continue automatiquement sans recherche (en te prévenant) et réessaie chaque jour.</p>
-  ${rechercheEpuiseeAujourdhui()?'<button class="btn secondaire compact mHaut8" onclick="delete S.reglages.rechercheKoQuand;sauver();toast(\'🔍 Je retenterai la recherche au prochain appel\');rendre()">Retenter la recherche maintenant</button>':""}</div>
+  ${S.reglages.rechercheKoDetail?'<p class="minuscule mHaut8">Dernier refus de Google : «&nbsp;'+ech(S.reglages.rechercheKoDetail.slice(0,200))+'&nbsp;»</p>':""}
+  ${S.cles.gemini||S.cles.claude?'<button class="btn secondaire compact mHaut8" onclick="testerRechercheProfil()">🔎 Tester la recherche Google maintenant</button><div id="resTestRecherche"></div>':""}</div>
 
   <div class="carte"><div class="carteTitre"><span class="ico">ℹ️</span>À propos</div>
   <p><b>MENTOR</b> — ton professeur particulier de bourse. <span class="puce bleu">Version ${VERSION_APP}</span></p>
@@ -2951,6 +2986,30 @@ function rendreProfil(){
   <button class="btn secondaire compact mHaut8" onclick="forcerMiseAJour()">↻ Recharger la dernière version</button>
   <p class="petit mHaut8">Outil strictement pédagogique. <b>Ceci n'est pas un conseil en investissement</b> : MENTOR n'est pas agréé par l'AMF et ne fournit pas de service de conseil au sens réglementaire. Les contenus, briefings et idées générés par l'IA peuvent contenir des erreurs et ne constituent jamais une recommandation personnalisée d'achat ou de vente. <b>Investir comporte un risque de perte en capital.</b> L'application ne passe jamais d'ordres, ne se connecte à aucun compte, ne demande jamais d'identifiants bancaires ; elle ne stocke que des clés d'accès à des services de données et d'IA. Pour toute situation patrimoniale complexe, consulte un professionnel agréé.</p>
   <button class="btn danger mHaut" onclick="confirmerReinit()">🗑️ Tout effacer et recommencer</button></div>`;
+}
+/* Diagnostic recherche Google : un VRAI appel avec google_search, en direct
+   (sans la dégradation automatique), pour savoir exactement où on en est :
+   ✓ fonctionne / limite par minute (passager) / quota du jour (jusqu'à 9 h). */
+async function testerRechercheProfil(){
+  const zone=$("#resTestRecherche"); if(!zone) return;
+  zone.innerHTML='<p class="petit mHaut8">Test en cours — j\'interroge l\'IA avec la recherche activée…</p>';
+  try{
+    const brut=await (S.cles.fournisseurIA==="claude"
+      ?appelClaude("Tu réponds en une seule courte phrase.","Utilise la recherche web pour trouver le jour et la date d'aujourd'hui, et réponds seulement cette date.",{recherche:true,delais:[2500]})
+      :appelGemini("Tu réponds en une seule courte phrase.","Utilise la recherche Google pour trouver le jour et la date d'aujourd'hui, et réponds seulement cette date.",{recherche:true,delais:[2500]}));
+    delete S.reglages.rechercheKoQuand; delete S.reglages.rechercheKoDetail; sauver();
+    zone.innerHTML='<div class="encart succes mHaut8">✓ <b>La recherche fonctionne !</b> (réponse : «&nbsp;'+ech(String(brut).trim().slice(0,60))+'&nbsp;»)<br>Va dans Briefing et touche <b>« ↻ Réessayer maintenant avec l\'actualité »</b> pour régénérer le briefing du jour avec les vraies nouvelles.</div>';
+  }catch(e){
+    let verdict;
+    if(e.statut===429){
+      const det=e.detail429||"";
+      if(/per.?day|daily/i.test(det)) verdict="Le <b>quota du jour</b> de la recherche est épuisé pour ta clé. Il se recharge vers <b>9 h du matin</b> (heure française) — le reste de MENTOR continue de fonctionner sans recherche.";
+      else if(/minute/i.test(det)||e.attendreSec) verdict="Simple <b>limite par minute</b> — la recherche n'est PAS épuisée pour la journée. Attends "+Math.round(Math.max(e.attendreSec||30,10))+" s et re-teste.";
+      else verdict="Refus 429 sans précision de Google — probablement le quota du jour (recharge vers 9 h).";
+      verdict+=(det?'<div class="minuscule mHaut8">Message technique de Google : «&nbsp;'+ech(det.slice(0,220))+'&nbsp;»</div>':"");
+    }else verdict=ech(e.message||"Échec du test — vérifie ta connexion et ta clé.");
+    zone.innerHTML='<div class="encart danger mHaut8">✗ Recherche indisponible à l\'instant. '+verdict+"</div>";
+  }
 }
 /* Teste la clé ElevenLabs et charge la liste des voix du compte. */
 async function chargerVoixXI(){
