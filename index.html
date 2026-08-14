@@ -1055,17 +1055,23 @@ function modeleGeminiActuel(){ return (S.reglages&&S.reglages.modeleGemini)||MOD
 async function appelGemini(systeme,utilisateur,opts){
   opts=opts||{};
   const candidats=[modeleGeminiActuel(),...MODELES_GEMINI.filter(m=>m!==modeleGeminiActuel())];
-  let erreur404=null;
+  let derniereErreur=null;
   for(const m of candidats){
     try{
       const texte=await appelGeminiModele(m,systeme,utilisateur,opts);
       if(S.reglages.modeleGemini!==m){ S.reglages.modeleGemini=m; sauver(); }
       return texte;
     }catch(e){
-      if(e&&e.statut===404){ erreur404=e; continue; } // modèle retiré → candidat suivant
+      // Candidat suivant si : modèle retiré (404), serveurs surchargés (503/500 —
+      // la surcharge est par modèle, un autre répond souvent au même moment),
+      // ou quota épuisé (429) sur un appel SANS recherche (quotas par modèle).
+      // Le 429 AVEC recherche reste géré plus haut (logique dédiée au grounding).
+      const basculable=e&&(e.statut===404||e.statut===503||e.statut===500||(e.statut===429&&opts.recherche===false));
+      if(basculable){ derniereErreur=e; if(opts.surEtape&&e.statut!==404) opts.surEtape("Modèle "+m+" indisponible ("+e.statut+") — j'essaie le suivant…"); continue; }
       throw e;
     }
   }
+  const erreur404=derniereErreur&&derniereErreur.statut===404?derniereErreur:null;
   // Dernier recours : demander à l'API la liste des modèles réellement disponibles.
   const decouvert=await decouvrirModeleGemini();
   if(decouvert){
@@ -1073,7 +1079,7 @@ async function appelGemini(systeme,utilisateur,opts){
     S.reglages.modeleGemini=decouvert; sauver();
     return texte;
   }
-  throw erreur404||new Erreur429Friendly("Aucun modèle Gemini disponible avec cette clé. Réessaie plus tard, ou vérifie ta clé dans Profil.");
+  throw derniereErreur||new Erreur429Friendly("Aucun modèle Gemini disponible avec cette clé. Réessaie plus tard, ou vérifie ta clé dans Profil.");
 }
 async function decouvrirModeleGemini(){
   try{
@@ -1141,7 +1147,19 @@ async function fetchAvecBackoff(url,options,surEtape,delais){
   for(let t=0;t<=delais.length;t++){
     let rep;
     try{ rep=await fetch(url,options); }
-    catch(e){ throw new Erreur429Friendly("Impossible de joindre le serveur. Vérifie ta connexion internet et réessaie."); }
+    catch(e){
+      // Échec RÉSEAU (la requête n'est jamais partie ou s'est perdue) : très
+      // fréquent et bref sur iPhone — réveil de l'app, bascule Wi-Fi/5G,
+      // relais privé. On RÉESSAIE au lieu d'abandonner immédiatement.
+      if(t<delais.length){
+        if(surEtape) surEtape("Petit souci réseau… nouvelle tentative dans "+(delais[t]/1000)+" s");
+        await new Promise(r=>setTimeout(r,delais[t]));
+        continue;
+      }
+      throw new Erreur429Friendly(navigator.onLine===false
+        ?"Tu sembles hors connexion. Vérifie internet et réessaie."
+        :"Impossible de joindre le serveur malgré ta connexion — sur iPhone, cela arrive juste après une mise en veille ou un changement de réseau, et c'est bref. Réessaie dans quelques secondes.");
+    }
     if(rep.ok) return rep;
     if((rep.status===429||rep.status===503||rep.status===500)&&t<delais.length){
       if(surEtape) surEtape("L'IA est très sollicitée… nouvelle tentative dans "+(delais[t]/1000)+" s");
@@ -1170,6 +1188,7 @@ async function fetchAvecBackoff(url,options,surEtape,delais){
         lancer("La clé API semble invalide ou incomplète. Vérifie-la dans Profil → Clés API (elle a peut-être été mal collée).");
       lancer("La demande a été refusée par le service ("+rep.status+"). Réessaie, et si ça persiste, vérifie ta clé dans Profil.");
     }
+    if(rep.status===503) lancer("Les serveurs de l'IA sont momentanément surchargés (503) — ce n'est ni ta clé ni MENTOR. C'est généralement bref : réessaie dans 2 à 5 minutes.");
     lancer("Le service répond avec une erreur ("+rep.status+"). Réessaie dans quelques minutes.");
   }
 }
