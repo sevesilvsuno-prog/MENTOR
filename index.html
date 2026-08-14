@@ -1428,10 +1428,23 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format EXAC
 /* ---- Briefing du matin (cœur IA de l'app) ---- */
 async function genererBriefing(surEtape){
   const tickersEuronext=[...S.positionsReelles,...S.positionsVirtuelles,...S.watchlist].filter(estEuronext).map(p=>p.ticker+" ("+p.nom+")");
+  /* Actualités collées par l'élève aujourd'hui (recherchées via une IA
+     externe) : elles REMPLACENT la recherche Google — aucune requête de
+     recherche n'est tentée, le briefing s'appuie sur ce texte daté et sourcé. */
+  const actuM=actuManuelleDuJour();
+  const mission=actuM
+?`MISSION : rédige le BRIEFING DU JOUR de ton élève À PARTIR DES ACTUALITÉS CI-DESSOUS, qu'il a recherchées AUJOURD'HUI via une IA externe (elles sont datées et sourcées). Appuie-toi dessus, reprends leurs sources dans "faits", et ne prétends JAMAIS avoir fait la recherche toi-même. Si une information te manque, dis-le simplement.
+
+ACTUALITÉS FOURNIES AUJOURD'HUI PAR TON ÉLÈVE :
+«
+${actuM.texte}
+»
+${tickersEuronext.length?"Si ces actualités donnent des cours de CLÔTURE pour "+tickersEuronext.join(", ")+", renseigne-les dans cloture_euronext avec leur date ; sinon laisse cloture_euronext vide — n'invente JAMAIS un cours.":""}`
+:`MISSION : rédige le BRIEFING DU JOUR de ton élève. Utilise la recherche Google pour l'actualité RÉELLE d'aujourd'hui et d'hier : macroéconomie (banques centrales, inflation, géopolitique), secteurs, et chacune des valeurs de son portefeuille et de sa watchlist. Cite tes sources.
+${tickersEuronext.length?"RECHERCHE OBLIGATOIRE : trouve le dernier cours de CLÔTURE (en euros ou devise locale) sur sa bourse européenne (Euronext Paris, Xetra, Milan…) pour chacune de ces valeurs : "+tickersEuronext.join(", ")+". Renseigne-les dans cloture_euronext avec la date de cette clôture.":""}`;
   const consigne=`${construireContexte()}
 
-MISSION : rédige le BRIEFING DU JOUR de ton élève. Utilise la recherche Google pour l'actualité RÉELLE d'aujourd'hui et d'hier : macroéconomie (banques centrales, inflation, géopolitique), secteurs, et chacune des valeurs de son portefeuille et de sa watchlist. Cite tes sources.
-${tickersEuronext.length?"RECHERCHE OBLIGATOIRE : trouve le dernier cours de CLÔTURE (en euros ou devise locale) sur sa bourse européenne (Euronext Paris, Xetra, Milan…) pour chacune de ces valeurs : "+tickersEuronext.join(", ")+". Renseigne-les dans cloture_euronext avec la date de cette clôture.":""}
+${mission}
 
 Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format EXACT :
 {
@@ -1445,9 +1458,10 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format EXAC
  "cloture_euronext": [ {"ticker":"...","cloture":123.45,"date":"AAAA-MM-JJ"} ]
 }
 Contraintes : 2 à 4 faits, 1 à 3 chaînes causales (c'est la signature du briefing : soigne le raisonnement), impact_positions couvre chaque position détenue, 1 à 3 idées TOUJOURS argumentées jamais impératives (l'action "attendre" est souvent la bonne). ${S.profil.phase===1?"Ton élève est en phase VIRTUELLE : formule les idées comme des exercices d'entraînement sur son portefeuille fictif.":""} ${S.profil.modeProtege?"Mode protégé actif : AUCUNE idée d'achat réel.":""}`;
-  const b=await appelIAJson(PROMPT_PROFESSEUR,consigne,{recherche:true,surEtape:surEtape});
-  // Trace honnête : si la recherche était épuisée, le briefing l'affichera.
-  if(_derniereGenerationSansRecherche) b._sansRecherche=true;
+  const b=await appelIAJson(PROMPT_PROFESSEUR,consigne,{recherche:!actuM,surEtape:surEtape});
+  // Trace honnête : actu fournie par l'élève, ou recherche épuisée → affiché.
+  if(actuM) b._actuManuelle=true;
+  else if(_derniereGenerationSansRecherche) b._sansRecherche=true;
   // Intégration des clôtures Euronext trouvées par l'IA (horodatées, modifiables à la main).
   (b.cloture_euronext||[]).forEach(c=>{
     if(c.ticker&&c.cloture){
@@ -1777,6 +1791,72 @@ function conversationDuJour(){
   return c;
 }
 
+/* ============================================================
+   ACTUALITÉ PAR COPIER-COLLER (idée de l'utilisateur, août 2026)
+   La recherche Google étant fermée aux clés gratuites, l'élève fait la
+   recherche LUI-MÊME avec son IA préférée (leurs applis cherchent le web
+   gratuitement) : MENTOR prépare un prompt sur mesure — avec le suivi des
+   sujets de la veille —, l'élève colle la réponse, et le briefing est bâti
+   dessus par le Gemini de l'app (qui, lui, fonctionne). Les actualités
+   collées nourrissent le prompt du lendemain puis sont purgées à 5 jours.
+   ============================================================ */
+function purgeActusManuelles(){
+  S.actusManuelles=(S.actusManuelles||[]).filter(a=>joursDepuis(a.date)<=5);
+}
+function actuManuelleDuJour(){ return (S.actusManuelles||[]).find(a=>a.date===aujourdhuiISO()); }
+function construirePromptRechercheManuelle(){
+  const tickers=[...S.positionsReelles,...S.positionsVirtuelles,...S.watchlist];
+  const noms=tickers.map(p=>p.ticker+" ("+p.nom+")");
+  const euronext=tickers.filter(estEuronext).map(p=>p.ticker+" ("+p.nom+")");
+  /* Suivi de la veille : le dernier briefing (ou les dernières actus collées)
+     alimente une consigne « cherche la suite de ces sujets ». */
+  const dernier=S.briefings.filter(b=>b.date<aujourdhuiISO()).slice(-1)[0];
+  const veille=(S.actusManuelles||[]).filter(a=>a.date<aujourdhuiISO()).slice(-1)[0];
+  let suivi="";
+  if(dernier){
+    const c=dernier.contenu||{};
+    const faits=(c.faits||[]).map(f=>f.titre).filter(Boolean).slice(0,4);
+    suivi="\nSUIVI — lors de mon dernier point ("+fmtDate(dernier.date)+"), on notait : "+String(c.meteo||"").slice(0,200)+(faits.length?" Sujets suivis : "+faits.join(" ; ")+".":"")+" Cherche s'il y a du NOUVEAU sur ces sujets et dis-le explicitement (suite, confirmation ou retournement).";
+  }else if(veille){
+    suivi="\nSUIVI — hier, les actualités notées mentionnaient : "+veille.texte.slice(0,350)+"… Cherche la suite de ces sujets.";
+  }
+  return "Fais une recherche web sur l'actualité économique et boursière d'AUJOURD'HUI ("+new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})+") et d'hier, puis réponds en FRANÇAIS, en texte simple et structuré (pas de tableau), avec pour chaque point la DATE et la SOURCE (nom du média).\n\n1. MACROÉCONOMIE (3 à 5 points) : banques centrales (BCE, Fed), inflation, taux, géopolitique qui bouge les marchés.\n2. MARCHÉS (2 à 3 points) : tendance du CAC 40 et des indices américains, secteurs qui montent ou baissent et pourquoi."+(noms.length?"\n3. MES VALEURS — l'actualité récente de CHACUNE : "+noms.join(", ")+".":"")+(euronext.length?"\n4. COURS DE CLÔTURE — le dernier cours de clôture (avec sa date) de : "+euronext.join(", ")+".":"")+suivi+"\n\nTermine par « Rien d'autre de notable » si c'est le cas. Ne donne AUCUN conseil d'investissement : uniquement des faits sourcés et datés.";
+}
+async function copierPromptRecherche(){
+  const p=construirePromptRechercheManuelle();
+  try{
+    await navigator.clipboard.writeText(p);
+    toast("Prompt copié ! Colle-le dans ChatGPT, Gemini ou Claude, puis rapporte-moi sa réponse ici.",7000);
+  }catch(e){
+    const z=document.getElementById("zonePromptRecherche");
+    if(z){ z.style.display="block"; z.value=p; z.focus(); z.select(); toast("Copie impossible automatiquement — sélectionne et copie le texte affiché."); }
+  }
+}
+async function validerActusCollees(){
+  const z=document.getElementById("zoneActusCollees"); if(!z) return;
+  const texte=(z.value||"").trim();
+  if(texte.length<80){ toast("Colle d'abord la réponse complète de l'IA — le texte semble vide ou trop court."); return; }
+  if(_briefingEnCours) return;
+  S.actusManuelles=(S.actusManuelles||[]).filter(a=>a.date!==aujourdhuiISO());
+  S.actusManuelles.push({date:aujourdhuiISO(),texte:texte.slice(0,20000),colleLe:new Date().toISOString()});
+  const jour=aujourdhuiISO();
+  S.briefings=S.briefings.filter(x=>x.date!==jour);
+  S.journal=S.journal.filter(j=>!(j.type==="idee_ia"&&j.date.slice(0,10)===jour));
+  sauver();
+  lancerBriefing();
+}
+function carteActuManuelle(){
+  const deja=!!actuManuelleDuJour();
+  return '<div class="carte"><div class="carteTitre"><span class="ico">📋</span>L\'actualité par copier-coller</div>'
+   +'<p class="petit">La recherche Google est bloquée sur ta clé, mais ton IA préférée (ChatGPT, Gemini, Claude…) sait chercher gratuitement dans son appli. En trois gestes : je prépare le prompt (avec le suivi d\'hier), tu colles sa réponse, je bâtis ton briefing dessus.</p>'
+   +'<button class="btn compact mHaut8" onclick="copierPromptRecherche()">1️⃣ Copier le prompt du jour</button>'
+   +'<textarea id="zonePromptRecherche" style="display:none;width:100%;min-height:90px;margin-top:8px" readonly></textarea>'
+   +'<textarea id="zoneActusCollees" style="width:100%;min-height:110px;margin-top:8px" placeholder="2️⃣ Colle ici la réponse complète de l\'IA…"></textarea>'
+   +'<button class="btn secondaire compact mHaut8" onclick="validerActusCollees()">3️⃣ Générer mon briefing avec ces infos</button>'
+   +(deja?'<p class="minuscule mHaut8">Des actualités ont déjà été collées aujourd\'hui — en recoller remplace et régénère le briefing.</p>':'')
+   +'<p class="minuscule mHaut8">Les actualités collées nourrissent aussi le prompt du lendemain (suivi des sujets), puis sont effacées automatiquement au bout de 5 jours.</p></div>';
+}
+
 function rendreBriefing(){
   const b=briefingDuJour();
   const salut=new Date().getHours()<12?"Bonjour":new Date().getHours()<18?"Bon après-midi":"Bonsoir";
@@ -1794,6 +1874,7 @@ function rendreBriefing(){
       <button class="btn mHaut" onclick="lancerBriefing()">Briefing du jour ✨</button>
       ${!navigator.onLine?'<p class="petit mHaut8">📡 Le briefing a besoin d\'internet — reviens dès que tu es connecté. En attendant, l\'École et ton journal sont ouverts.</p>':""}
     </div>`;
+    if(rechercheEpuiseeAujourdhui()||rechercheSembleSansQuota()||(S.actusManuelles||[]).length) h+=carteActuManuelle();
     // Les briefings passés restent consultables hors-ligne.
     const passes=S.briefings.slice(-5).reverse();
     if(passes.length){ h+='<div class="carteTitre mHaut"><span class="ico">🗄️</span>Briefings précédents</div><div class="listeGroupe">'+passes.map(p=>'<button class="ligneListe" onclick="voirBriefingArchive(\''+p.date+'\')"><div class="dPrincipal"><div class="dTitre">Briefing du '+fmtDate(p.date)+'</div><div class="dSous">'+ech((p.contenu.meteo||"").slice(0,70))+'…</div></div><span class="chevron">›</span></button>').join("")+"</div>"; }
@@ -1808,6 +1889,7 @@ function rendreBriefing(){
       ?'Google refuse la recherche à ta clé <b>dès la première demande du jour</b> — le bouton ci-dessous fait un test éclair et régénère seulement si elle est revenue.'
       :'Le quota de recherche se recharge vers <b>9 h du matin</b> (heure française). Dès qu\'il est revenu :')
       +'</p><button class="btn secondaire compact mHaut8" onclick="regenererBriefingDuJour()">↻ Régénérer ce briefing avec l\'actualité</button></div>';
+    h+=carteActuManuelle();
   }
   return h+rendreChat();
 }
@@ -1868,6 +1950,7 @@ async function lancerBriefing(){
 /* ---- Cartes du briefing, dans l'ordre imposé ---- */
 function rendreCartesBriefing(c,archive){
   let h="";
+  if(c._actuManuelle) h+='<div class="encart succes">📋 <b>Briefing bâti sur l\'actualité que tu as fournie aujourd\'hui</b> (recherchée via ton IA externe) — elle nourrira aussi le suivi de demain. Les cours Twelve Data restent en direct.</div>';
   if(c._sansRecherche) h+='<div class="encart alerte">🔍 <b>Briefing généré sans la recherche Google</b> — '+(rechercheSembleSansQuota()
     ?'d\'après les refus répétés de Google (dès la toute première demande du jour), le <b>niveau gratuit de ta clé n\'inclut plus la recherche</b> : ce n\'est pas lié à ton utilisation, et attendre 9 h n\'y changera rien. Le reste de MENTOR (cours, leçons, journal, chat) fonctionne normalement. Pistes : Profil → Clés API → « Tester la recherche », une clé créée dans un <b>nouveau projet Google</b>, ou le fournisseur Claude (payant).'
     :'son quota gratuit était atteint au moment de la génération (il se recharge vers 9 h du matin, heure française).')
@@ -3694,6 +3777,7 @@ async function lireBlocIA(bloc,texte,jeton){
    DÉMARRAGE
    ============================================================ */
 charger();
+purgeActusManuelles();
 
 // Service worker : ouverture hors-ligne (leçons, journal, derniers cours).
 if("serviceWorker" in navigator){
